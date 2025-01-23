@@ -193,7 +193,7 @@ func (h *AuthHandler) RefreshTokenHandler() http.HandlerFunc {
 		// Get the refresh token from the database
 		refreshToken, err := h.RefreshTokenRepository.GetRefreshTokenByToken(r.Context(), req.RefreshToken)
 		if err != nil {
-			APIResponse.ErrorResponse(w, r, fmt.Errorf("frefresh token not found"), http.StatusNotFound)
+			APIResponse.ErrorResponse(w, r, err, http.StatusNotFound)
 			return
 		}
 

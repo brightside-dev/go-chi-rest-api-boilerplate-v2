@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"time"
 
 	"github.com/brightside-dev/boxing-be/internal/database"
 	"github.com/brightside-dev/boxing-be/internal/model"
+	"github.com/brightside-dev/boxing-be/internal/util"
 )
 
 type UserRepository interface {
@@ -51,19 +51,12 @@ func (r *userRepository) GetAllUsers(ctx context.Context) ([]model.User, error) 
 		}
 		// Convert birthdayRaw to time.Time
 		if birthdayRaw != nil {
-			switch v := birthdayRaw.(type) {
-			case time.Time:
-				user.Birthday = v
-			case []uint8:
-				// Convert from string (in []uint8) to time.Time
-				parsedTime, err := time.Parse("2006-01-02", string(v)) // Adjust the format as per your DB field format
-				if err != nil {
-					return nil, fmt.Errorf("failed to parse birthday: %w", err)
-				}
-				user.Birthday = parsedTime
-			default:
-				return nil, fmt.Errorf("unexpected type for birthday: %T", v)
+			birthday, err := util.ParseBirthday(birthdayRaw)
+			if err != nil {
+				return nil, err
 			}
+
+			user.Birthday = birthday
 		}
 		users = append(users, user)
 	}
@@ -96,19 +89,12 @@ func (r *userRepository) GetUserByID(ctx context.Context, id int) (*model.User, 
 	fmt.Printf("user: %+v\n", user)
 	// Convert birthdayRaw to time.Time
 	if birthdayRaw != nil {
-		switch v := birthdayRaw.(type) {
-		case time.Time:
-			user.Birthday = v
-		case []uint8:
-			// Convert from string (in []uint8) to time.Time
-			parsedTime, err := time.Parse("2006-01-02", string(v)) // Adjust the format as per your DB field format
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse birthday: %w", err)
-			}
-			user.Birthday = parsedTime
-		default:
-			return nil, fmt.Errorf("unexpected type for birthday: %T", v)
+		birthday, err := util.ParseBirthday(birthdayRaw)
+		if err != nil {
+			return nil, err
 		}
+
+		user.Birthday = birthday
 	}
 
 	return &user, nil
@@ -139,19 +125,12 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 
 	// Convert birthdayRaw to time.Time
 	if birthdayRaw != nil {
-		switch v := birthdayRaw.(type) {
-		case time.Time:
-			user.Birthday = v
-		case []uint8:
-			// Convert from string (in []uint8) to time.Time
-			parsedTime, err := time.Parse("2006-01-02", string(v)) // Adjust the format as per your DB field format
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse birthday: %w", err)
-			}
-			user.Birthday = parsedTime
-		default:
-			return nil, fmt.Errorf("unexpected type for birthday: %T", v)
+		birthday, err := util.ParseBirthday(birthdayRaw)
+		if err != nil {
+			return nil, err
 		}
+
+		user.Birthday = birthday
 	}
 
 	return &user, nil

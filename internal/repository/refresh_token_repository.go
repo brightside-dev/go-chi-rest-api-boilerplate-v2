@@ -3,10 +3,10 @@ package repository
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/brightside-dev/boxing-be/internal/database"
 	"github.com/brightside-dev/boxing-be/internal/model"
+	"github.com/brightside-dev/boxing-be/internal/util"
 )
 
 type RefreshTokenRepository interface {
@@ -78,20 +78,14 @@ func (r *refreshTokenRepository) GetRefreshTokenByToken(ctx context.Context, tok
 	}
 
 	if expiresAtRaw != nil {
-		switch v := expiresAtRaw.(type) {
-		case time.Time:
-			refreshToken.ExpiresAt = v
-		case []uint8:
-			// Convert from string (in []uint8) to time.Time
-			parsedTime, err := time.Parse("2006-01-02 15:04:05", string(v)) // Adjust the format as per your DB field format
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse birthday: %w", err)
-			}
-			refreshToken.ExpiresAt = parsedTime
-		default:
-			return nil, fmt.Errorf("unexpected type for birthday: %T", v)
+		expiresAt, err := util.ParseDateTime(expiresAtRaw)
+		if err != nil {
+			return nil, err
 		}
+		refreshToken.ExpiresAt = expiresAt
 	}
+
+	fmt.Printf("Refresh Token: %+v\n", refreshToken)
 
 	return &refreshToken, nil
 }
