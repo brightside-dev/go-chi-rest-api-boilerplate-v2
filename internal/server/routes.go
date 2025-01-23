@@ -1,11 +1,12 @@
 package server
 
 import (
-	"encoding/json"
-	"log"
 	"net/http"
 
-	"boxing-be/cmd/web"
+	"github.com/brightside-dev/boxing-be/cmd/web"
+	"github.com/brightside-dev/boxing-be/internal/handler"
+	"github.com/brightside-dev/boxing-be/internal/repository"
+
 	"github.com/a-h/templ"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -24,9 +25,18 @@ func (s *Server) RegisterRoutes() http.Handler {
 		MaxAge:           300,
 	}))
 
-	r.Get("/", s.HelloWorldHandler)
+	r.Get("/", handler.PingHandler())
+	r.Get("/health", handler.HealthHandler(s.db))
 
-	r.Get("/health", s.healthHandler)
+	r.Group(func(r chi.Router) {
+		// Initialize repositories and handlers
+		userRepo := repository.NewUserRepository(s.db)
+		userHandler := handler.NewUserHandler(userRepo)
+
+		r.Get("/api/users", userHandler.GetUsersHandler())
+		r.Get("/api/users/{id}", userHandler.GetUserHandler())
+		r.Post("/api/create-user", userHandler.CreateUserHandler())
+	})
 
 	fileServer := http.FileServer(http.FS(web.Files))
 	r.Handle("/assets/*", fileServer)
@@ -36,19 +46,14 @@ func (s *Server) RegisterRoutes() http.Handler {
 	return r
 }
 
-func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
-	resp := make(map[string]string)
-	resp["message"] = "Hello World"
+// func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
+// 	resp := make(map[string]string)
+// 	resp["message"] = "Hello World"
 
-	jsonResp, err := json.Marshal(resp)
-	if err != nil {
-		log.Fatalf("error handling JSON marshal. Err: %v", err)
-	}
+// 	jsonResp, err := json.Marshal(resp)
+// 	if err != nil {
+// 		log.Fatalf("error handling JSON marshal. Err: %v", err)
+// 	}
 
-	_, _ = w.Write(jsonResp)
-}
-
-func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
-	jsonResp, _ := json.Marshal(s.db.Health())
-	_, _ = w.Write(jsonResp)
-}
+// 	_, _ = w.Write(jsonResp)
+// }

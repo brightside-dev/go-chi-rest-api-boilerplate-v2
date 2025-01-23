@@ -22,6 +22,11 @@ type Service interface {
 	// Close terminates the database connection.
 	// It returns an error if the connection cannot be closed.
 	Close() error
+
+	QueryRow(query string, args ...interface{}) *sql.Row
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
 }
 
 type service struct {
@@ -58,6 +63,25 @@ func New() Service {
 		db: db,
 	}
 	return dbInstance
+}
+
+// BeginTx starts a transaction.
+func (s *service) BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error) {
+	return s.db.BeginTx(ctx, opts)
+}
+
+func (s *service) QueryRow(query string, args ...interface{}) *sql.Row {
+	return s.db.QueryRow(query, args...)
+}
+
+// QueryContext executes a query that returns rows, typically a SELECT.
+func (s *service) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
+	return s.db.QueryContext(ctx, query, args...)
+}
+
+// QueryRowContext executes a query that is expected to return at most one row.
+func (s *service) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
+	return s.db.QueryRowContext(ctx, query, args...)
 }
 
 // Health checks the health of the database connection by pinging the database.

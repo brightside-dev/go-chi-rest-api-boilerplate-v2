@@ -7,9 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/brightside-dev/boxing-be/internal/database"
 	_ "github.com/joho/godotenv/autoload"
-
-	"boxing-be/internal/database"
 )
 
 type Server struct {
