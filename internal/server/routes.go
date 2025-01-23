@@ -3,9 +3,9 @@ package server
 import (
 	"net/http"
 
-	"github.com/brightside-dev/boxing-be/cmd/web"
-	"github.com/brightside-dev/boxing-be/internal/handler"
-	"github.com/brightside-dev/boxing-be/internal/repository"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/cmd/web"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/repository"
 
 	"github.com/a-h/templ"
 	"github.com/go-chi/chi/v5"

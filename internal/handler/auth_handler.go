@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightside-dev/boxing-be/internal/handler/dto"
-	APIResponse "github.com/brightside-dev/boxing-be/internal/handler/response"
-	"github.com/brightside-dev/boxing-be/internal/model"
-	"github.com/brightside-dev/boxing-be/internal/repository"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/dto"
+	APIResponse "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/response"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/model"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/repository"
 	"github.com/go-chi/jwtauth/v5"
 	"golang.org/x/crypto/bcrypt"
 )

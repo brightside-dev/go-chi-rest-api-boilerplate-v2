@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/brightside-dev/boxing-be/internal/database"
-	"github.com/brightside-dev/boxing-be/internal/model"
-	"github.com/brightside-dev/boxing-be/internal/util"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/database"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/model"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/util"
 )
 
 type UserRepository interface {

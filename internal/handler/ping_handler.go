@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/brightside-dev/boxing-be/internal/database"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/database"
 )
 
 func PingHandler() http.HandlerFunc {

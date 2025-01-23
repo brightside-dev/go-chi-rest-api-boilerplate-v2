@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/brightside-dev/boxing-be/internal/server"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/server"
 )
 
 func gracefulShutdown(apiServer *http.Server, done chan bool) {

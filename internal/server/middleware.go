@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	APIResponse "github.com/brightside-dev/boxing-be/internal/handler/response"
+	APIResponse "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/response"
 	"github.com/go-chi/jwtauth/v5"
 )
 
