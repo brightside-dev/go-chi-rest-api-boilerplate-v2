@@ -9,20 +9,20 @@ import (
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/util"
 )
 
-type RefreshTokenRepository interface {
-	CreateRefreshToken(ctx context.Context, refreshToken *model.RefreshToken) error
-	GetRefreshTokenByToken(ctx context.Context, token string) (*model.RefreshToken, error)
+type AdminUserRefreshTokenRepository interface {
+	Create(ctx context.Context, refreshToken *model.AdminUserRefreshToken) error
+	GetByToken(ctx context.Context, token string) (*model.AdminUserRefreshToken, error)
 }
 
-type refreshTokenRepository struct {
+type adminUserRefreshTokenRepository struct {
 	db database.Service
 }
 
-func NewRefreshTokenRepository(db database.Service) RefreshTokenRepository {
-	return &refreshTokenRepository{db: db}
+func NewAdminUserRefreshTokenRepository(db database.Service) AdminUserRefreshTokenRepository {
+	return &adminUserRefreshTokenRepository{db: db}
 }
 
-func (r *refreshTokenRepository) CreateRefreshToken(ctx context.Context, refreshToken *model.RefreshToken) error {
+func (r *adminUserRefreshTokenRepository) Create(ctx context.Context, refreshToken *model.AdminUserRefreshToken) error {
 	// Create refresh token
 	// Begin a transaction
 	tx, err := r.db.BeginTx(ctx, nil)
@@ -57,8 +57,8 @@ func (r *refreshTokenRepository) CreateRefreshToken(ctx context.Context, refresh
 	return nil
 }
 
-func (r *refreshTokenRepository) GetRefreshTokenByToken(ctx context.Context, token string) (*model.RefreshToken, error) {
-	var refreshToken model.RefreshToken
+func (r *adminUserRefreshTokenRepository) GetByToken(ctx context.Context, token string) (*model.AdminUserRefreshToken, error) {
+	var refreshToken model.AdminUserRefreshToken
 
 	row := r.db.QueryRowContext(ctx, "SELECT * FROM refresh_tokens WHERE token = ?", token)
 

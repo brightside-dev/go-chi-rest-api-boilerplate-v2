@@ -1,6 +1,6 @@
 package dto
 
-type CreateUserRequest struct {
+type UserCreateRequest struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
@@ -15,22 +15,22 @@ type UserResponse struct {
 	Country string `json:"country"`
 }
 
-type LoginRequest struct {
+type UserLoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-type LoginResponse struct {
-	User         *UserResponse `json:"user"`
-	AccessToken  *string       `json:"token"`
-	RefreshToken *string       `json:"refresh_token"`
+type UserLoginResponse struct {
+	User         UserResponse `json:"user"`
+	AccessToken  string       `json:"token"`
+	RefreshToken string       `json:"refresh_token"`
 }
 
-type RefreshTokenRequest struct {
+type UserRefreshTokenRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-type RefreshTokenResponse struct {
-	AccessToken  *string `json:"token"`
-	RefreshToken *string `json:"refresh_token"`
+type UserRefreshTokenResponse struct {
+	AccessToken  string `json:"token"`
+	RefreshToken string `json:"refresh_token"`
 }

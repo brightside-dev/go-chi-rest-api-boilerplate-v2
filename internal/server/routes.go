@@ -3,11 +3,9 @@ package server
 import (
 	"net/http"
 
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/cmd/web"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/repository"
 
-	"github.com/a-h/templ"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -25,10 +23,13 @@ func (s *Server) RegisterRoutes() http.Handler {
 		MaxAge:           300,
 	}))
 
+	r.Get("/health", handler.HealthHandler(s.db))
+	r.Get("/api/ping", handler.PingHandler())
+
 	// START API
 	// Initialize repositories and handlers
 	userRepo := repository.NewUserRepository(s.db)
-	refreshTokenRepo := repository.NewRefreshTokenRepository(s.db)
+	refreshTokenRepo := repository.NewUserRefreshTokenRepository(s.db)
 	userHandler := handler.NewUserHandler(userRepo)
 	authHandler := handler.NewAuthHandler(userRepo, refreshTokenRepo)
 	r.Group(func(r chi.Router) {
@@ -45,20 +46,28 @@ func (s *Server) RegisterRoutes() http.Handler {
 		r.Post("/api/auth/login", authHandler.LoginHandler())
 		r.Post("/api/auth/register", authHandler.RegisterHandler())
 		r.Post("/api/auth/refresh-token", authHandler.RefreshTokenHandler())
-		r.Get("/", handler.PingHandler())
-		r.Get("/health", handler.HealthHandler(s.db))
 	})
 	// END API
 
-	// START ADMIN
-	// Serve static files
-	fileServer := http.FileServer(http.FS(web.Files))
+	adminUserRepo := repository.NewAdminUserRepository(s.db)
+	adminRefreshTokenRepo := repository.NewAdminUserRefreshTokenRepository(s.db)
+	authAdminHandler := handler.NewAuthAdminHandler(adminUserRepo, adminRefreshTokenRepo)
+	adminUserHandler := handler.NewAdminUserHandler(adminUserRepo)
 	r.Group(func(r chi.Router) {
-		r.Handle("/assets/*", fileServer)
-		r.Get("/web", templ.Handler(web.HelloForm()).ServeHTTP)
-		r.Post("/hello", web.HelloWebHandler)
+		// Auth Middleware
+		tokenAuth := jwtauth.New("HS256", []byte("secret"), nil)
+		r.Use(jwtauth.Verifier(tokenAuth))
+		r.Use(APIAdminAuthMiddleware)
+		r.Get("/api/admin/users", adminUserHandler.GetUsersHandler())
+		r.Get("/api/admin/users/{id}", adminUserHandler.GetUserHandler())
+		r.Post("/api/admin/create-admin-user", adminUserHandler.CreateUserHandler())
 	})
-	// END ADMIN
+
+	r.Group(func(r chi.Router) {
+		r.Post("/api/admin/auth/login", authAdminHandler.LoginHandler())
+		r.Post("/api/admin/auth/register", authAdminHandler.RegisterHandler())
+		r.Post("/api/admin/auth/refresh-token", authAdminHandler.RefreshTokenHandler())
+	})
 
 	return r
 }

@@ -33,7 +33,18 @@ type Log struct {
 	CreatedAt string `json:"created_at"`
 }
 
-type RefreshToken struct {
+type UserRefreshToken struct {
+	ID        int       `json:"id"`
+	Token     string    `json:"token"`
+	UserID    int       `json:"user_id"`
+	CreatedAt string    `json:"created_at"`
+	ExpiresAt time.Time `json:"updated_at"`
+	RevokedAt bool      `json:"revoked_at"`
+	UserAgent string    `json:"user_agent"`
+	IPAddress string    `json:"ip_address"`
+}
+
+type AdminUserRefreshToken struct {
 	ID        int       `json:"id"`
 	Token     string    `json:"token"`
 	UserID    int       `json:"user_id"`

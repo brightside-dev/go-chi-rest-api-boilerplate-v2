@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE refresh_tokens (
+CREATE TABLE user_refresh_tokens (
     id SERIAL PRIMARY KEY,                -- Unique identifier for the token entry
     user_id BIGINT UNSIGNED NOT NULL,             -- Foreign key linking to the users table
     token VARCHAR(255) NOT NULL UNIQUE,   -- The actual refresh token (must be unique)
@@ -15,5 +15,5 @@ CREATE TABLE refresh_tokens (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE refresh_tokens;
+DROP TABLE user_refresh_tokens;
 -- +goose StatementEnd

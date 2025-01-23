@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
-	"time"
 
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/dto"
 	APIResponse "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/response"
@@ -15,37 +13,29 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type UserHandler struct {
-	UserRepository repository.UserRepository
+type AdminUserHandler struct {
+	AdminUserRepository repository.AdminUserRepository
 }
 
-func NewUserHandler(repo repository.UserRepository) *UserHandler {
-	return &UserHandler{UserRepository: repo}
+func NewAdminUserHandler(repo repository.AdminUserRepository) *AdminUserHandler {
+	return &AdminUserHandler{AdminUserRepository: repo}
 }
 
-func (h *UserHandler) GetUsersHandler() http.HandlerFunc {
+func (h *AdminUserHandler) GetUsersHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		users, err := h.UserRepository.GetAllUsers(r.Context())
+		users, err := h.AdminUserRepository.GetAll(r.Context())
 		if err != nil {
 			APIResponse.ErrorResponse(w, r, err, http.StatusInternalServerError)
 			return
 		}
 
-		var response []dto.UserResponse
+		var response []dto.AdminUserResponse
 		for _, user := range users {
-			// Ensure FirstName is not empty
-			if len(user.FirstName) == 0 {
-				continue // Skip users with an empty first name
-			}
-
-			// Format the name with the first letter of FirstName capitalized
-			formattedName := fmt.Sprintf("%s.%s", strings.ToUpper(string(user.FirstName[0])), user.LastName)
-
 			// Append to response slice
-			response = append(response, dto.UserResponse{
-				ID:      user.ID,
-				Name:    formattedName,
-				Country: user.Country,
+			response = append(response, dto.AdminUserResponse{
+				ID:        user.ID,
+				FirstName: user.FirstName,
+				LastName:  user.LastName,
 			})
 		}
 
@@ -53,7 +43,7 @@ func (h *UserHandler) GetUsersHandler() http.HandlerFunc {
 	}
 }
 
-func (h *UserHandler) GetUserHandler() http.HandlerFunc {
+func (h *AdminUserHandler) GetUserHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Validate "id" query parameter
 		idParam := chi.URLParam(r, "id")
@@ -68,7 +58,7 @@ func (h *UserHandler) GetUserHandler() http.HandlerFunc {
 			return
 		}
 
-		user, err := h.UserRepository.GetUserByID(r.Context(), id)
+		user, err := h.AdminUserRepository.GetByID(r.Context(), id)
 		if err != nil {
 			APIResponse.ErrorResponse(w, r, err, http.StatusInternalServerError)
 			return
@@ -80,17 +70,17 @@ func (h *UserHandler) GetUserHandler() http.HandlerFunc {
 			return
 		}
 
-		responseDTO := dto.UserResponse{
-			ID:      user.ID,
-			Name:    fmt.Sprintf("%s.%s", strings.ToUpper(string(user.FirstName[0])), user.LastName),
-			Country: user.Country,
+		responseDTO := dto.AdminUserResponse{
+			ID:        user.ID,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
 		}
 
 		APIResponse.SuccessResponse(w, r, &responseDTO)
 	}
 }
 
-func (h *UserHandler) CreateUserHandler() http.HandlerFunc {
+func (h *AdminUserHandler) CreateUserHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := dto.UserCreateRequest{}
 
@@ -107,34 +97,26 @@ func (h *UserHandler) CreateUserHandler() http.HandlerFunc {
 			return
 		}
 
-		// Parse the Birthday string into time.Time
-		birthday, err := time.Parse("2006-01-02", req.Birthday)
-		if err != nil {
-			http.Error(w, "Bad Request", http.StatusBadRequest)
-			return
-		}
-
 		// Create a new user
-		user := model.User{
+		adminUser := model.AdminUser{
 			FirstName: req.FirstName,
 			LastName:  req.LastName,
 			Email:     req.Email,
 			Password:  req.Password,
-			Country:   req.Country,
-			Birthday:  birthday,
 		}
 
 		// Save user to database
-		newUser, err := h.UserRepository.CreateUser(r.Context(), &user)
+		newUser, err := h.AdminUserRepository.Create(r.Context(), &adminUser)
 		if err != nil {
 			APIResponse.ErrorResponse(w, r, err, http.StatusInternalServerError)
 			return
 		}
 
-		responseDTO := dto.UserResponse{
-			ID:      newUser.ID,
-			Name:    fmt.Sprintf("%s.%s", strings.ToUpper(string(newUser.FirstName[0])), newUser.LastName),
-			Country: newUser.Country,
+		responseDTO := dto.AdminUserResponse{
+			ID:        newUser.ID,
+			FirstName: newUser.FirstName,
+			LastName:  newUser.LastName,
+			Email:     newUser.Email,
 		}
 
 		APIResponse.SuccessResponse(w, r, &responseDTO, http.StatusCreated)
