@@ -13,6 +13,7 @@ import (
 type UserRepository interface {
 	GetAllUsers(ctx context.Context) ([]model.User, error)
 	GetUserByID(ctx context.Context, id int) (*model.User, error)
+	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
 	CreateUser(ctx context.Context, user *model.User) (*model.User, error)
 }
 
@@ -93,6 +94,49 @@ func (r *userRepository) GetUserByID(ctx context.Context, id int) (*model.User, 
 	}
 
 	fmt.Printf("user: %+v\n", user)
+	// Convert birthdayRaw to time.Time
+	if birthdayRaw != nil {
+		switch v := birthdayRaw.(type) {
+		case time.Time:
+			user.Birthday = v
+		case []uint8:
+			// Convert from string (in []uint8) to time.Time
+			parsedTime, err := time.Parse("2006-01-02", string(v)) // Adjust the format as per your DB field format
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse birthday: %w", err)
+			}
+			user.Birthday = parsedTime
+		default:
+			return nil, fmt.Errorf("unexpected type for birthday: %T", v)
+		}
+	}
+
+	return &user, nil
+}
+
+func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
+	row := r.db.QueryRowContext(ctx, "SELECT * FROM users WHERE email = ?", email)
+
+	var user model.User
+	var birthdayRaw interface{}
+
+	// Scan the row, using birthdayRaw to handle the birthday field temporarily
+	if err := row.Scan(
+		&user.ID,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+		&user.Password,
+		&birthdayRaw,
+		&user.Country,
+		&user.CreatedAt,
+		&user.UpdatedAt); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("user not found: %w", err)
+	}
+
 	// Convert birthdayRaw to time.Time
 	if birthdayRaw != nil {
 		switch v := birthdayRaw.(type) {

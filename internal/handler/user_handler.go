@@ -55,9 +55,16 @@ func (h *UserHandler) GetUsersHandler() http.HandlerFunc {
 
 func (h *UserHandler) GetUserHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(chi.URLParam(r, "id"))
+		// Validate "id" query parameter
+		idParam := chi.URLParam(r, "id")
+		if idParam == "" {
+			APIResponse.ErrorResponse(w, r, fmt.Errorf("missing 'id' parameter"), http.StatusBadRequest)
+			return
+		}
+
+		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			APIResponse.ErrorResponse(w, r, err, http.StatusBadRequest)
+			APIResponse.ErrorResponse(w, r, fmt.Errorf("id must be a valid integer"), http.StatusBadRequest)
 			return
 		}
 
@@ -79,7 +86,7 @@ func (h *UserHandler) GetUserHandler() http.HandlerFunc {
 			Country: user.Country,
 		}
 
-		APIResponse.SuccessResponse(w, r, responseDTO)
+		APIResponse.SuccessResponse(w, r, &responseDTO)
 	}
 }
 
@@ -89,7 +96,14 @@ func (h *UserHandler) CreateUserHandler() http.HandlerFunc {
 
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
-			http.Error(w, "Bad Request", http.StatusBadRequest)
+			APIResponse.ErrorResponse(w, r, fmt.Errorf("failed to decode request: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		// Check for missing or empty fields
+		if req.FirstName == "" || req.LastName == "" || req.Email == "" ||
+			req.Password == "" || req.Country == "" || req.Birthday == "" {
+			APIResponse.ErrorResponse(w, r, fmt.Errorf("missing required fields"), http.StatusBadRequest)
 			return
 		}
 
@@ -111,10 +125,18 @@ func (h *UserHandler) CreateUserHandler() http.HandlerFunc {
 		}
 
 		// Save user to database
-		_, err = h.UserRepository.CreateUser(r.Context(), &user)
+		newUser, err := h.UserRepository.CreateUser(r.Context(), &user)
 		if err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			APIResponse.ErrorResponse(w, r, err, http.StatusInternalServerError)
 			return
 		}
+
+		responseDTO := dto.UserResponse{
+			ID:      newUser.ID,
+			Name:    fmt.Sprintf("%s.%s", strings.ToUpper(string(newUser.FirstName[0])), newUser.LastName),
+			Country: newUser.Country,
+		}
+
+		APIResponse.SuccessResponse(w, r, &responseDTO, http.StatusCreated)
 	}
 }

@@ -11,12 +11,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/go-chi/jwtauth/v5"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
@@ -25,23 +25,40 @@ func (s *Server) RegisterRoutes() http.Handler {
 		MaxAge:           300,
 	}))
 
-	r.Get("/", handler.PingHandler())
-	r.Get("/health", handler.HealthHandler(s.db))
-
+	// START API
+	// Initialize repositories and handlers
+	userRepo := repository.NewUserRepository(s.db)
+	refreshTokenRepo := repository.NewRefreshTokenRepository(s.db)
+	userHandler := handler.NewUserHandler(userRepo)
+	authHandler := handler.NewAuthHandler(userRepo, refreshTokenRepo)
 	r.Group(func(r chi.Router) {
-		// Initialize repositories and handlers
-		userRepo := repository.NewUserRepository(s.db)
-		userHandler := handler.NewUserHandler(userRepo)
-
+		// Auth Middleware
+		tokenAuth := jwtauth.New("HS256", []byte("secret"), nil)
+		r.Use(jwtauth.Verifier(tokenAuth))
+		r.Use(APIAuthMiddleware)
 		r.Get("/api/users", userHandler.GetUsersHandler())
 		r.Get("/api/users/{id}", userHandler.GetUserHandler())
 		r.Post("/api/create-user", userHandler.CreateUserHandler())
 	})
 
+	r.Group(func(r chi.Router) {
+		r.Post("/api/auth/login", authHandler.LoginHandler())
+		r.Post("/api/auth/register", authHandler.RegisterHandler())
+		r.Post("/api/auth/refresh-token", authHandler.RefreshTokenHandler())
+		r.Get("/", handler.PingHandler())
+		r.Get("/health", handler.HealthHandler(s.db))
+	})
+	// END API
+
+	// START ADMIN
+	// Serve static files
 	fileServer := http.FileServer(http.FS(web.Files))
-	r.Handle("/assets/*", fileServer)
-	r.Get("/web", templ.Handler(web.HelloForm()).ServeHTTP)
-	r.Post("/hello", web.HelloWebHandler)
+	r.Group(func(r chi.Router) {
+		r.Handle("/assets/*", fileServer)
+		r.Get("/web", templ.Handler(web.HelloForm()).ServeHTTP)
+		r.Post("/hello", web.HelloWebHandler)
+	})
+	// END ADMIN
 
 	return r
 }

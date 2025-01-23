@@ -34,7 +34,7 @@ func ErrorResponse(w http.ResponseWriter, r *http.Request, err error, statusCode
 	w.Write(jsonResp)
 }
 
-func SuccessResponse(w http.ResponseWriter, r *http.Request, response interface{}) {
+func SuccessResponse(w http.ResponseWriter, r *http.Request, response interface{}, statusCode ...int) {
 	// logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 	// 	AddSource: true,
 	// }))
@@ -42,7 +42,14 @@ func SuccessResponse(w http.ResponseWriter, r *http.Request, response interface{
 	//logger.Info("success", "method", r.Method, "uri", r.URL.RequestURI())
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+
+	if len(statusCode) == 0 {
+		statusCode = append(statusCode, http.StatusOK)
+	}
+
+	// Set the response status code
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode[0])
 
 	jsonResp, err := json.Marshal(APIResponse{
 		Success: true,

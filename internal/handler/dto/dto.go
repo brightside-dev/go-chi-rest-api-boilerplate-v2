@@ -14,3 +14,23 @@ type UserResponse struct {
 	Name    string `json:"name"`
 	Country string `json:"country"`
 }
+
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type LoginResponse struct {
+	User         *UserResponse `json:"user"`
+	AccessToken  *string       `json:"token"`
+	RefreshToken *string       `json:"refresh_token"`
+}
+
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+type RefreshTokenResponse struct {
+	AccessToken  *string `json:"token"`
+	RefreshToken *string `json:"refresh_token"`
+}
