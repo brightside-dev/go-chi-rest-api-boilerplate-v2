@@ -13,17 +13,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Dashboard | Bootstrap Simple Admin Template</title>
-    <link href="static/vendor/fontawesome/css/fontawesome.min.css" rel="stylesheet">
-    <link href="static/vendor/fontawesome/css/solid.min.css" rel="stylesheet">
-    <link href="static/vendor/fontawesome/css/brands.min.css" rel="stylesheet">
-    <link href="static/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="static/css/main.css" rel="stylesheet">
-    <link href="static/vendor/flagiconcss/css/flag-icon.min.css" rel="stylesheet">
+    <link href="assets/vendor/fontawesome/css/fontawesome.min.css" rel="stylesheet">
+    <link href="assets/vendor/fontawesome/css/solid.min.css" rel="stylesheet">
+    <link href="assets/vendor/fontawesome/css/brands.min.css" rel="stylesheet">
+    <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/main.css" rel="stylesheet">
+    <link href="assets/vendor/flagiconcss/css/flag-icon.min.css" rel="stylesheet">
 </head>
 <body>
-    {{template "nav" .}}
-    {{template "content" .}}
-    {{template "footer" .}}
+    <script src="assets/vendor/jquery/jquery.min.js" type='text/javascript'></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js" type='text/javascript'></script>
+    <script src="assets/js/script.js" type='text/javascript'></script>
+    <div class="wrapper">
+        {{template "nav" .}}
+        <div id="body" class="">
+            <!-- end of navbar navigation -->
+            {{template "content" .}}
+        </div>
+        <!-- {{template "footer" .}} -->
+    </div>
+    <!-- <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js" type='text/javascript'></script> -->
+    <!-- <script src="assets/js/script.js" type='text/javascript'></script> -->
+    <!-- <script src="assets/vendor/jquery/jquery.min.js" type='text/javascript'></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js" type='text/javascript'></script>
+    <script src="assets/vendor/chartsjs/Chart.min.js" type='text/javascript'></script>
+    <script src="assets/js/dashboard-charts.js" type='text/javascript'></script>
+    <script src="assets/js/script.js" type='text/javascript'></script> -->
 </body>
 </html>
 {{ end }}

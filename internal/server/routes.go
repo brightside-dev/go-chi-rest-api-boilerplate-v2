@@ -71,12 +71,17 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// Web
 	// Serve the static files
-	fileServer := http.FileServer(http.Dir(".ui/static/"))
-	r.Get("/static", http.StripPrefix("/static/", fileServer).ServeHTTP)
+	// fileServer := http.FileServer(http.Dir(".ui/static/"))
+	// r.Get("/static", http.StripPrefix("/static/", fileServer).ServeHTTP)
+
+	fileServer := http.FileServer(http.Dir("./ui/assets/"))
+	r.Handle("/assets/*", http.StripPrefix("/assets/", fileServer))
 
 	webHandler := handler.NewWebHandler()
 	r.Group(func(r chi.Router) {
-		r.Get("/admin/dashboard", webHandler.Dashboard)
+		r.Get("/dashboard", webHandler.Dashboard)
+		r.Get("/users", webHandler.Users)
+		r.Get("/login", webHandler.Login)
 	})
 
 	return r

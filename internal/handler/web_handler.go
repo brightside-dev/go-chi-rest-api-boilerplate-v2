@@ -14,5 +14,13 @@ func NewWebHandler() *WebHandler {
 }
 
 func (wc *WebHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
-	template.Render(w, r, "dashboard.html", nil)
+	template.RenderDashboard(w, r, "home", nil)
+}
+
+func (wc *WebHandler) Users(w http.ResponseWriter, r *http.Request) {
+	template.RenderDashboard(w, r, "users", nil)
+}
+
+func (wc *WebHandler) Login(w http.ResponseWriter, r *http.Request) {
+	template.RenderLogin(w, r, "login", nil)
 }
