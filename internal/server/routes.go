@@ -69,6 +69,16 @@ func (s *Server) RegisterRoutes() http.Handler {
 		r.Post("/api/admin/auth/refresh-token", authAdminHandler.RefreshTokenHandler())
 	})
 
+	// Web
+	// Serve the static files
+	fileServer := http.FileServer(http.Dir(".ui/static/"))
+	r.Get("/static", http.StripPrefix("/static/", fileServer).ServeHTTP)
+
+	webHandler := handler.NewWebHandler()
+	r.Group(func(r chi.Router) {
+		r.Get("/admin/dashboard", webHandler.Dashboard)
+	})
+
 	return r
 }
 
