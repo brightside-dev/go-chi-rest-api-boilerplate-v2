@@ -23,7 +23,7 @@ func NewUserHandler(repo repository.UserRepository) *UserHandler {
 	return &UserHandler{UserRepository: repo}
 }
 
-func (h *UserHandler) GetUsersHandler() http.HandlerFunc {
+func (h *UserHandler) GetUsers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		users, err := h.UserRepository.GetAllUsers(r.Context())
 		if err != nil {
@@ -53,7 +53,7 @@ func (h *UserHandler) GetUsersHandler() http.HandlerFunc {
 	}
 }
 
-func (h *UserHandler) GetUserHandler() http.HandlerFunc {
+func (h *UserHandler) GetUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Validate "id" query parameter
 		idParam := chi.URLParam(r, "id")
@@ -90,7 +90,7 @@ func (h *UserHandler) GetUserHandler() http.HandlerFunc {
 	}
 }
 
-func (h *UserHandler) CreateUserHandler() http.HandlerFunc {
+func (h *UserHandler) CreateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := dto.UserCreateRequest{}
 

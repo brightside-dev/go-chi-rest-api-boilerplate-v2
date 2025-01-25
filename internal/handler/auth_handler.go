@@ -12,6 +12,7 @@ import (
 	APIResponse "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/response"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/model"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/repository"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/template"
 	"github.com/go-chi/jwtauth/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -31,7 +32,7 @@ func NewAuthHandler(
 	}
 }
 
-func (h *AuthHandler) LoginHandler() http.HandlerFunc {
+func (h *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := dto.UserLoginRequest{}
 
@@ -114,7 +115,14 @@ func (h *AuthHandler) LoginHandler() http.HandlerFunc {
 	}
 }
 
-func (h *AuthHandler) RegisterHandler() http.HandlerFunc {
+func (wc *WebHandler) LoginForm(w http.ResponseWriter, r *http.Request) {
+	data := template.NewTemplateData(r, &wc.SessionManager)
+	data.Form = LoginForm{}
+
+	template.RenderLogin(w, r, "login", data)
+}
+
+func (h *AuthHandler) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := dto.UserCreateRequest{}
 
@@ -172,14 +180,14 @@ func (h *AuthHandler) RegisterHandler() http.HandlerFunc {
 	}
 }
 
-func (h *AuthHandler) LogoutHandler() http.HandlerFunc {
+func (h *AuthHandler) Logout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Logout logic
 		APIResponse.SuccessResponse(w, r, nil)
 	}
 }
 
-func (h *AuthHandler) RefreshTokenHandler() http.HandlerFunc {
+func (h *AuthHandler) RefreshToken() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Refresh token logic
 		req := dto.UserRefreshTokenRequest{}

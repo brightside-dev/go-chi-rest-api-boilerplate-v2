@@ -43,7 +43,7 @@ type LoginForm struct {
 	SystemErrors map[string]string
 }
 
-func (h *AuthAdminHandler) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
+func (h *AuthAdminHandler) Login(w http.ResponseWriter, r *http.Request) {
 	form := LoginForm{
 		Email:        r.FormValue("email"),
 		Password:     r.FormValue("password"),
@@ -102,7 +102,7 @@ func (h *AuthAdminHandler) LoginPostHandler(w http.ResponseWriter, r *http.Reque
 	http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
 }
 
-func (h *AuthAdminHandler) RegisterPostHandler(w http.ResponseWriter, r *http.Request) {
+func (h *AuthAdminHandler) Register(w http.ResponseWriter, r *http.Request) {
 	req := dto.AdminUserCreateRequest{}
 
 	err := json.NewDecoder(r.Body).Decode(&req)

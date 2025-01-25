@@ -26,10 +26,3 @@ func (wc *WebHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
 func (wc *WebHandler) Users(w http.ResponseWriter, r *http.Request) {
 	template.RenderDashboard(w, r, "users", nil)
 }
-
-func (wc *WebHandler) LoginFormHandler(w http.ResponseWriter, r *http.Request) {
-	data := template.NewTemplateData(r, &wc.SessionManager)
-	data.Form = LoginForm{}
-
-	template.RenderLogin(w, r, "login", data)
-}

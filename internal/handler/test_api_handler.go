@@ -14,13 +14,13 @@ func NewTestAPIHandler() *TestAPIHandler {
 	return &TestAPIHandler{}
 }
 
-func (h *TestAPIHandler) PingHandler() http.HandlerFunc {
+func (h *TestAPIHandler) Ping() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Pong"))
 	}
 }
 
-func (h *TestAPIHandler) HealthHandler(db database.Service) http.HandlerFunc {
+func (h *TestAPIHandler) Health(db database.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		jsonResp, _ := json.Marshal(db.Health())
 		_, _ = w.Write(jsonResp)

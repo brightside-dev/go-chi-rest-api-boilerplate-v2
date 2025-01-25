@@ -22,7 +22,7 @@ func NewAdminUserHandler(repo repository.AdminUserRepository) *AdminUserHandler 
 	return &AdminUserHandler{AdminUserRepository: repo}
 }
 
-func (h *AdminUserHandler) GetUsersHandler() http.HandlerFunc {
+func (h *AdminUserHandler) GetUsers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		users, err := h.AdminUserRepository.GetAll(r.Context())
 		if err != nil {
@@ -44,7 +44,7 @@ func (h *AdminUserHandler) GetUsersHandler() http.HandlerFunc {
 	}
 }
 
-func (h *AdminUserHandler) GetUserHandler() http.HandlerFunc {
+func (h *AdminUserHandler) GetUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Validate "id" query parameter
 		idParam := chi.URLParam(r, "id")
@@ -81,7 +81,7 @@ func (h *AdminUserHandler) GetUserHandler() http.HandlerFunc {
 	}
 }
 
-func (h *AdminUserHandler) CreateUserHandler() http.HandlerFunc {
+func (h *AdminUserHandler) CreateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := dto.AdminUserCreateRequest{}
 

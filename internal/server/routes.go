@@ -15,22 +15,22 @@ func (s *Server) RegisterRoutes(container *Container) http.Handler {
 	r.Use(SessionManagerMiddleware(container.SessionManager))
 	r.Use(JWTVerifierMiddleware(container.JWTAuth))
 
-	r.Get("/api/health", container.TestAPIHandler.HealthHandler(s.db))
-	r.Get("/api/ping", container.TestAPIHandler.PingHandler())
+	r.Get("/api/health", container.TestAPIHandler.Health(s.db))
+	r.Get("/api/ping", container.TestAPIHandler.Ping())
 
 	// START API
 	r.Group(func(r chi.Router) {
 		// Auth Middleware
 		r.Use(APIAuthMiddleware)
-		r.Get("/api/users", container.UserHandler.GetUsersHandler())
-		r.Get("/api/users/{id}", container.UserHandler.GetUserHandler())
-		r.Post("/api/create-user", container.UserHandler.CreateUserHandler())
+		r.Get("/api/users", container.UserHandler.GetUsers())
+		r.Get("/api/users/{id}", container.UserHandler.GetUser())
+		r.Post("/api/create-user", container.UserHandler.CreateUser())
 	})
 
 	r.Group(func(r chi.Router) {
-		r.Post("/api/auth/login", container.AuthHandler.LoginHandler())
-		r.Post("/api/auth/register", container.AuthHandler.RegisterHandler())
-		r.Post("/api/auth/refresh-token", container.AuthHandler.RefreshTokenHandler())
+		r.Post("/api/auth/login", container.AuthHandler.Login())
+		r.Post("/api/auth/register", container.AuthHandler.Register())
+		r.Post("/api/auth/refresh-token", container.AuthHandler.RefreshToken())
 	})
 	// END API
 
@@ -41,21 +41,21 @@ func (s *Server) RegisterRoutes(container *Container) http.Handler {
 	// TODO for testing - remove later
 	r.Group(func(r chi.Router) {
 		// Auth Middleware
-		r.Get("/api/admin/users", container.AdminUserHandler.GetUsersHandler())
-		r.Get("/api/admin/users/{id}", container.AdminUserHandler.GetUserHandler())
-		r.Post("/api/admin/create-admin-user", container.AdminUserHandler.CreateUserHandler())
+		r.Get("/api/admin/users", container.AdminUserHandler.GetUsers())
+		r.Get("/api/admin/users/{id}", container.AdminUserHandler.GetUser())
+		r.Post("/api/admin/create-admin-user", container.AdminUserHandler.CreateUser())
 	})
 
 	// Public Admin Routes
 	r.Group(func(r chi.Router) {
-		r.Post("/admin/login", container.AuthAdminHandler.LoginPostHandler)
-		r.Post("/admin/register", container.AuthAdminHandler.RegisterPostHandler)
+		r.Post("/admin/login", container.AuthAdminHandler.Login)
+		r.Post("/admin/register", container.AuthAdminHandler.Register)
 	})
 
 	// Protected Admin Routes
 	r.Group(func(r chi.Router) {
 		r.Use(AdminSessionAuthMiddleware(container.SessionManager))
-		r.Get("/admin/login", container.WebHandler.LoginFormHandler)
+		r.Get("/admin/login", container.WebHandler.LoginForm)
 		r.Get("/admin/dashboard", container.WebHandler.Dashboard)
 		r.Get("/admin/users", container.WebHandler.Users)
 		r.Get("/admin/logout", container.AuthAdminHandler.Logout)
