@@ -63,3 +63,10 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 │   │   ├── partials/
 │   │   └── base.html
 ```
+
+### Useful Resources
+* https://go.dev/doc/effective_go
+* https://pkg.go.dev/std
+* https://lets-go.alexedwards.net/
+* https://www.youtube.com/@MelkeyDev
+* https://www.youtube.com/@anthonygg_
