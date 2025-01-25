@@ -24,7 +24,7 @@ func (wc *WebHandler) Users(w http.ResponseWriter, r *http.Request) {
 	template.RenderDashboard(w, r, "users", nil)
 }
 
-func (wc *WebHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (wc *WebHandler) LoginFormHandler(w http.ResponseWriter, r *http.Request) {
 	data := &template.TemplateData{
 		Form: LoginForm{},
 	}

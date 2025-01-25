@@ -63,6 +63,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 	adminUserRepo := repository.NewAdminUserRepository(s.db)
 	authAdminHandler := handler.NewAuthAdminHandler(adminUserRepo, *sessionManager)
 	adminUserHandler := handler.NewAdminUserHandler(adminUserRepo)
+	webHandler := handler.NewWebHandler()
+
+	// TODO for testing - remove later
 	r.Group(func(r chi.Router) {
 		// Auth Middleware
 		r.Get("/api/admin/users", adminUserHandler.GetUsersHandler())
@@ -70,16 +73,17 @@ func (s *Server) RegisterRoutes() http.Handler {
 		r.Post("/api/admin/create-admin-user", adminUserHandler.CreateUserHandler())
 	})
 
+	// Public Admin Routes
 	r.Group(func(r chi.Router) {
-		r.Post("/login", authAdminHandler.LoginHandler)
-		r.Post("/admin/auth/register", authAdminHandler.RegisterHandler())
+		r.Get("/admin/login", webHandler.LoginFormHandler)
+		r.Post("/admin/login", authAdminHandler.LoginPostHandler)
+		r.Post("/admin/register", authAdminHandler.RegisterPostHandler)
 	})
 
-	webHandler := handler.NewWebHandler()
+	// Protected Admin Routes
 	r.Group(func(r chi.Router) {
-		r.Get("/dashboard", webHandler.Dashboard)
-		r.Get("/users", webHandler.Users)
-		r.Get("/login", webHandler.Login)
+		r.Get("/admin/dashboard", webHandler.Dashboard)
+		r.Get("/admin/users", webHandler.Users)
 	})
 
 	return r

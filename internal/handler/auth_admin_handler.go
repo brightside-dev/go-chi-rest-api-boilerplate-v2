@@ -43,7 +43,7 @@ type LoginForm struct {
 	SystemErrors map[string]string
 }
 
-func (h *AuthAdminHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
+func (h *AuthAdminHandler) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	form := LoginForm{
 		Email:        r.FormValue("email"),
 		Password:     r.FormValue("password"),
@@ -102,57 +102,56 @@ func (h *AuthAdminHandler) LoginHandler(w http.ResponseWriter, r *http.Request) 
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
-func (h *AuthAdminHandler) RegisterHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		req := dto.AdminUserCreateRequest{}
+func (h *AuthAdminHandler) RegisterPostHandler(w http.ResponseWriter, r *http.Request) {
+	req := dto.AdminUserCreateRequest{}
 
-		err := json.NewDecoder(r.Body).Decode(&req)
-		if err != nil {
-			APIResponse.ErrorResponse(w, r, fmt.Errorf("failed to decode request: %w", err), http.StatusBadRequest)
-			return
-		}
-
-		// Check for missing or empty fields
-		if req.FirstName == "" || req.LastName == "" || req.Email == "" ||
-			req.Password == "" {
-			APIResponse.ErrorResponse(w, r, fmt.Errorf("missing required fields"), http.StatusBadRequest)
-			return
-		}
-
-		// Hash the password
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-		if err != nil {
-			APIResponse.ErrorResponse(w, r, fmt.Errorf("failed to hash password: %w", err), http.StatusInternalServerError)
-			return
-		}
-
-		// Create a new adminUser
-		adminUser := model.AdminUser{
-			FirstName: req.FirstName,
-			LastName:  req.LastName,
-			Email:     req.Email,
-			Password:  string(hashedPassword),
-		}
-
-		// Save adminUser to database
-		newUser, err := h.AdminUserRepository.Create(r.Context(), &adminUser)
-		if err != nil {
-			APIResponse.ErrorResponse(w, r, err, http.StatusInternalServerError)
-			return
-		}
-
-		responseDTO := dto.AdminUserResponse{
-			ID:        newUser.ID,
-			FirstName: newUser.FirstName,
-			LastName:  newUser.LastName,
-			Email:     newUser.Email,
-		}
-
-		APIResponse.SuccessResponse(w, r, &responseDTO, http.StatusCreated)
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		APIResponse.ErrorResponse(w, r, fmt.Errorf("failed to decode request: %w", err), http.StatusBadRequest)
+		return
 	}
+
+	// Check for missing or empty fields
+	if req.FirstName == "" || req.LastName == "" || req.Email == "" ||
+		req.Password == "" {
+		APIResponse.ErrorResponse(w, r, fmt.Errorf("missing required fields"), http.StatusBadRequest)
+		return
+	}
+
+	// Hash the password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		APIResponse.ErrorResponse(w, r, fmt.Errorf("failed to hash password: %w", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Create a new adminUser
+	adminUser := model.AdminUser{
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Email:     req.Email,
+		Password:  string(hashedPassword),
+	}
+
+	// Save adminUser to database
+	newUser, err := h.AdminUserRepository.Create(r.Context(), &adminUser)
+	if err != nil {
+		APIResponse.ErrorResponse(w, r, err, http.StatusInternalServerError)
+		return
+	}
+
+	responseDTO := dto.AdminUserResponse{
+		ID:        newUser.ID,
+		FirstName: newUser.FirstName,
+		LastName:  newUser.LastName,
+		Email:     newUser.Email,
+	}
+
+	APIResponse.SuccessResponse(w, r, &responseDTO, http.StatusCreated)
+
 }
 
-func (h *AuthAdminHandler) LogoutHandler() http.HandlerFunc {
+func (h *AuthAdminHandler) LogoutPostHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Logout logic
 		APIResponse.SuccessResponse(w, r, nil)
