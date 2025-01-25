@@ -96,7 +96,6 @@ func (h *AuthAdminHandler) LoginPostHandler(w http.ResponseWriter, r *http.Reque
 	// 'logged in'.
 	h.SessionManager.Put(r.Context(), "adminUserID", &user.ID)
 
-	// Redirect the user to the create snippet page.
 	http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
 }
 
@@ -149,9 +148,14 @@ func (h *AuthAdminHandler) RegisterPostHandler(w http.ResponseWriter, r *http.Re
 
 }
 
-func (h *AuthAdminHandler) LogoutPostHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Logout logic
-		APIResponse.SuccessResponse(w, r, nil)
-	}
+func (h *AuthAdminHandler) LogoutPostHandler(w http.ResponseWriter, r *http.Request) {
+
+	// Remove the authenticatedUserID from the session data so that the user is
+	// 'logged out'.
+	h.SessionManager.Remove(r.Context(), "authenticatedUserID")
+
+	// flash success
+	h.SessionManager.Put(r.Context(), "flash", "You've been logged out successfully")
+
+	http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
 }

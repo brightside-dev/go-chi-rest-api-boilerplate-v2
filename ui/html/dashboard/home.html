@@ -48,6 +48,11 @@
 
     <div class="content">
         <div class="container">
+            {{with .Flash}}
+            <div class="p-2 text-start alert alert-success">
+                {{.}}
+            </div>
+            {{end}}
             <div class="row">
                 <div class="col-md-12 page-header">
                     <div class="page-pretitle">Overview</div>

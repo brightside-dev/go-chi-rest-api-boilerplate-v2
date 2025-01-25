@@ -19,6 +19,11 @@
 
 <body>
     <div class="wrapper">
+        {{with .Flash}}
+        <div class="p-2 text-start alert alert-success">
+            {{.}}
+        </div>
+        {{end}}
         <div class="auth-content">
             <div class="card">
                 <div class="card-body text-center">
