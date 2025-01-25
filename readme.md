@@ -25,12 +25,12 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 
 ### 🚀 Features
 **1. REST API**
-    * JWT Authentication: https://github.com/go-chi/jwtauth
+     <br> * JWT Authentication: https://github.com/go-chi/jwtauth
 
 **2. Admin CMS Dashboard**
-    * Session authentication and manager: https://github.com/alexedwards/scs
-    * CMS dashboard theme: https://github.com/pro-dev-ph/bootstrap-simple-admin-template
-    * Minimal JS to handle necessary CMS animations, charts and data tables
+    <br>* Session authentication and manager: https://github.com/alexedwards/scs
+    <br>* CMS dashboard theme: https://github.com/pro-dev-ph/bootstrap-simple-admin-template
+    <br>* Minimal JS to handle necessary CMS animations, charts and data tables
 
 ### ⛩️ Folder Structure
 ```
