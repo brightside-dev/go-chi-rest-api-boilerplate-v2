@@ -15,12 +15,13 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 5. Implement Firebase push notifications service
 6. Implement web sockets service (Pusher, PubNub etc.)
 7. Implement tests
+8. Implement CI/CD using Github
 
 ### 🧰 Project Tools & Packages
 * MySQL
 * Router & Middleware: https://github.com/go-chi/chi
 * Database migrations are handled by Goose: https://github.com/pressly/goose
-*
+* Godotenv for env variables
 
 ### 🚀 Features
 **1. REST API**
