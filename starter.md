@@ -1,4 +1,4 @@
-# Project boxing-be
+# 🥶 Golang + Chi Web Application Template
 
 One Paragraph of project description goes here
 

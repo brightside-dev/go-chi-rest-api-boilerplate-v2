@@ -32,6 +32,8 @@ func NewContainer(db database.Service) *Container {
 	sessionManager := scs.New()
 	sessionManager.Store = mysqlstore.New(db.GetDB())
 	sessionManager.Lifetime = 12 * time.Hour
+	sessionManager.Cookie.Secure = true
+
 	// JWT Auth
 	tokenAuth := jwtauth.New("HS256", []byte("secret"), nil)
 
