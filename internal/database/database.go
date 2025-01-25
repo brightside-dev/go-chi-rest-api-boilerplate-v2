@@ -27,6 +27,8 @@ type Service interface {
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
 	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
+
+	GetDB() *sql.DB
 }
 
 type service struct {
@@ -132,6 +134,11 @@ func (s *service) Health() map[string]string {
 	}
 
 	return stats
+}
+
+// GetDB returns the database connection.
+func (s *service) GetDB() *sql.DB {
+	return s.db
 }
 
 // Close closes the database connection.

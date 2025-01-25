@@ -14,6 +14,9 @@ func NewWebHandler() *WebHandler {
 }
 
 func (wc *WebHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
+	// data := &template.TemplateData{
+	// 	AdminUser: 2021,
+	// }
 	template.RenderDashboard(w, r, "home", nil)
 }
 

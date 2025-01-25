@@ -2,10 +2,13 @@ package server
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/repository"
 
+	"github.com/alexedwards/scs/mysqlstore" // New import
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -49,9 +52,17 @@ func (s *Server) RegisterRoutes() http.Handler {
 	})
 	// END API
 
+	// Web
+	fileServer := http.FileServer(http.Dir("./ui/assets/"))
+	r.Handle("/assets/*", http.StripPrefix("/assets/", fileServer))
+
+	sessionManager := scs.New()
+	sessionManager.Store = mysqlstore.New(s.db.GetDB())
+	sessionManager.Lifetime = 12 * time.Hour
+	r.Use(sessionManager.LoadAndSave)
+
 	adminUserRepo := repository.NewAdminUserRepository(s.db)
-	adminRefreshTokenRepo := repository.NewAdminUserRefreshTokenRepository(s.db)
-	authAdminHandler := handler.NewAuthAdminHandler(adminUserRepo, adminRefreshTokenRepo)
+	authAdminHandler := handler.NewAuthAdminHandler(adminUserRepo, *sessionManager)
 	adminUserHandler := handler.NewAdminUserHandler(adminUserRepo)
 	r.Group(func(r chi.Router) {
 		// Auth Middleware
@@ -66,16 +77,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Group(func(r chi.Router) {
 		r.Post("/api/admin/auth/login", authAdminHandler.LoginHandler())
 		r.Post("/api/admin/auth/register", authAdminHandler.RegisterHandler())
-		r.Post("/api/admin/auth/refresh-token", authAdminHandler.RefreshTokenHandler())
 	})
-
-	// Web
-	// Serve the static files
-	// fileServer := http.FileServer(http.Dir(".ui/static/"))
-	// r.Get("/static", http.StripPrefix("/static/", fileServer).ServeHTTP)
-
-	fileServer := http.FileServer(http.Dir("./ui/assets/"))
-	r.Handle("/assets/*", http.StripPrefix("/assets/", fileServer))
 
 	webHandler := handler.NewWebHandler()
 	r.Group(func(r chi.Router) {
