@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/dto"
 	APIResponse "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/response"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/model"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/repository"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/template"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -28,49 +30,76 @@ func NewAuthAdminHandler(
 	}
 }
 
-func (h *AuthAdminHandler) LoginHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		req := dto.AdminUserLoginRequest{}
+func (h *AuthAdminHandler) RedirectToLoginForm(form *LoginForm, w http.ResponseWriter, r *http.Request) {
+	data := &template.TemplateData{}
+	data.Form = form
+	template.RenderLogin(w, r, "login", data)
+}
 
-		decoder := json.NewDecoder(r.Body)
-		err := decoder.Decode(&req)
-		if err != nil {
-			APIResponse.ErrorResponse(w, r, fmt.Errorf("failed to decode request: %w", err), http.StatusBadRequest)
-			return
-		}
+type LoginForm struct {
+	Email        string
+	Password     string
+	FormErrors   map[string]string
+	SystemErrors map[string]string
+}
 
-		// Login logic
-		user, err := h.AdminUserRepository.GetByEmail(r.Context(), req.Email)
-		if err != nil {
-			APIResponse.ErrorResponse(w, r, fmt.Errorf("failed to get user: %w", err), http.StatusUnauthorized)
-			return
-		}
-
-		if user == nil {
-			APIResponse.ErrorResponse(w, r, fmt.Errorf("user not found"), http.StatusUnauthorized)
-			return
-		}
-
-		// Compare the password
-		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
-		if err != nil {
-			APIResponse.ErrorResponse(w, r, fmt.Errorf("invalid password and/or email"), http.StatusUnauthorized)
-			return
-		}
-
-		err = h.SessionManager.RenewToken(r.Context())
-		if err != nil {
-			//app.serverError(w, r, err)
-			return
-		}
-
-		// Add the ID of the current user to the session, so that they are now
-		// 'logged in'.
-		h.SessionManager.Put(r.Context(), "adminUserID", &user.ID)
-
-		// Redirect the user to the create snippet page.
-		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+func (h *AuthAdminHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
+	form := LoginForm{
+		Email:        r.FormValue("email"),
+		Password:     r.FormValue("password"),
+		FormErrors:   map[string]string{},
+		SystemErrors: map[string]string{},
 	}
+
+	if strings.TrimSpace(form.Email) == "" {
+		form.FormErrors["email"] = "Email cannot be blank"
+		h.RedirectToLoginForm(&form, w, r)
+		return
+	}
+
+	if strings.TrimSpace(form.Password) == "" {
+		form.FormErrors["password"] = "Password cannot be blank"
+		h.RedirectToLoginForm(&form, w, r)
+		return
+	}
+
+	// Login logic
+	user, err := h.AdminUserRepository.GetByEmail(r.Context(), form.Email)
+	if err != nil {
+		form.SystemErrors["message"] = err.Error()
+		h.RedirectToLoginForm(&form, w, r)
+		return
+	}
+
+	fmt.Printf("user: %v\n", user)
+
+	if user == nil {
+		form.SystemErrors["message"] = "Invalid password and/or email"
+		h.RedirectToLoginForm(&form, w, r)
+		return
+	}
+
+	// Compare the password
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password))
+	if err != nil {
+		form.SystemErrors["message"] = "Invalid password and/or email"
+		h.RedirectToLoginForm(&form, w, r)
+		return
+	}
+
+	err = h.SessionManager.RenewToken(r.Context())
+	if err != nil {
+		form.SystemErrors["message"] = err.Error()
+		h.RedirectToLoginForm(&form, w, r)
+		return
+	}
+
+	// Add the ID of the current user to the session, so that they are now
+	// 'logged in'.
+	h.SessionManager.Put(r.Context(), "adminUserID", &user.ID)
+
+	// Redirect the user to the create snippet page.
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
 func (h *AuthAdminHandler) RegisterHandler() http.HandlerFunc {

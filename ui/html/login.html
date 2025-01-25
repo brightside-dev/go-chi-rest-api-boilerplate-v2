@@ -26,27 +26,33 @@
                         <img class="brand" src="assets/img/bootstraper-logo.png" alt="bootstraper logo">
                     </div>
                     <h6 class="mb-4 text-muted">Login to your account</h6>
-                    <form action="" method="">
+                    <form action="/login" method="POST" novalidate>
                         <div class="mb-3 text-start">
                             <label for="email" class="form-label">Email address</label>
-                            <input type="email" class="form-control" placeholder="Enter your email" required>
+                            <input name="email" type="email" class="form-control" placeholder="Enter your email" value="{{.Form.Email}}" required>
                         </div>
+
                         <div class="mb-3 text-start">
                             <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" placeholder="Enter your password" required>
+                            <input name="password" type="password" class="form-control" placeholder="Enter your password" value="{{.Form.Password}}" required>
+                        </div>        
+                        <button type="submit" class="btn btn-primary mb-4" style="width:100%">Login </button>
+                        {{with .Form.SystemErrors.message}}
+                        <div class="p-2 text-start alert alert-danger">
+                           {{.}}
                         </div>
-                        <div class="mb-3 text-start">
-                            <div class="form-check">
-                              <input class="form-check-input" name="remember" type="checkbox" value="" id="check1">
-                              <label class="form-check-label" for="check1">
-                                Remember me on this device
-                              </label>
-                            </div>
+                        {{end}}
+                        {{with .Form.FormErrors.password}}
+                        <div class="p-2 text-start alert alert-danger">
+                           {{.}}
                         </div>
-                        <button class="btn btn-primary mb-4" style="width:100%">Login</button>
+                        {{end}}
+                        {{with .Form.FormErrors.email}}
+                        <div class="p-2 text-start alert alert-danger">
+                           {{.}}
+                        </div>
+                        {{end}}
                     </form>
-                    <p class="mb-2 text-muted">Forgot password? <a href="forgot-password.html">Reset</a></p>
-                    <p class="mb-0 text-muted">Don't have account yet? <a href="signup.html">Signup</a></p>
                 </div>
             </div>
         </div>

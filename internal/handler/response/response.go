@@ -63,3 +63,7 @@ func SuccessResponse(w http.ResponseWriter, r *http.Request, response interface{
 
 	w.Write(jsonResp)
 }
+
+func ClientErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
+	ErrorResponse(w, r, err, http.StatusBadRequest)
+}

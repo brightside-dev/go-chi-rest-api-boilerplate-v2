@@ -25,6 +25,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
+	sessionManager := scs.New()
+	sessionManager.Store = mysqlstore.New(s.db.GetDB())
+	sessionManager.Lifetime = 12 * time.Hour
+	r.Use(sessionManager.LoadAndSave)
 
 	r.Get("/health", handler.HealthHandler(s.db))
 	r.Get("/api/ping", handler.PingHandler())
@@ -56,27 +60,19 @@ func (s *Server) RegisterRoutes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./ui/assets/"))
 	r.Handle("/assets/*", http.StripPrefix("/assets/", fileServer))
 
-	sessionManager := scs.New()
-	sessionManager.Store = mysqlstore.New(s.db.GetDB())
-	sessionManager.Lifetime = 12 * time.Hour
-	r.Use(sessionManager.LoadAndSave)
-
 	adminUserRepo := repository.NewAdminUserRepository(s.db)
 	authAdminHandler := handler.NewAuthAdminHandler(adminUserRepo, *sessionManager)
 	adminUserHandler := handler.NewAdminUserHandler(adminUserRepo)
 	r.Group(func(r chi.Router) {
 		// Auth Middleware
-		tokenAuth := jwtauth.New("HS256", []byte("secret"), nil)
-		r.Use(jwtauth.Verifier(tokenAuth))
-		r.Use(APIAdminAuthMiddleware)
 		r.Get("/api/admin/users", adminUserHandler.GetUsersHandler())
 		r.Get("/api/admin/users/{id}", adminUserHandler.GetUserHandler())
 		r.Post("/api/admin/create-admin-user", adminUserHandler.CreateUserHandler())
 	})
 
 	r.Group(func(r chi.Router) {
-		r.Post("/api/admin/auth/login", authAdminHandler.LoginHandler())
-		r.Post("/api/admin/auth/register", authAdminHandler.RegisterHandler())
+		r.Post("/login", authAdminHandler.LoginHandler)
+		r.Post("/admin/auth/register", authAdminHandler.RegisterHandler())
 	})
 
 	webHandler := handler.NewWebHandler()

@@ -11,6 +11,7 @@ import (
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/model"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/repository"
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AdminUserHandler struct {
@@ -82,7 +83,7 @@ func (h *AdminUserHandler) GetUserHandler() http.HandlerFunc {
 
 func (h *AdminUserHandler) CreateUserHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		req := dto.UserCreateRequest{}
+		req := dto.AdminUserCreateRequest{}
 
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
@@ -92,8 +93,15 @@ func (h *AdminUserHandler) CreateUserHandler() http.HandlerFunc {
 
 		// Check for missing or empty fields
 		if req.FirstName == "" || req.LastName == "" || req.Email == "" ||
-			req.Password == "" || req.Country == "" || req.Birthday == "" {
+			req.Password == "" {
 			APIResponse.ErrorResponse(w, r, fmt.Errorf("missing required fields"), http.StatusBadRequest)
+			return
+		}
+
+		// Hash the password
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		if err != nil {
+			APIResponse.ErrorResponse(w, r, fmt.Errorf("failed to hash password: %w", err), http.StatusInternalServerError)
 			return
 		}
 
@@ -102,7 +110,7 @@ func (h *AdminUserHandler) CreateUserHandler() http.HandlerFunc {
 			FirstName: req.FirstName,
 			LastName:  req.LastName,
 			Email:     req.Email,
-			Password:  req.Password,
+			Password:  string(hashedPassword),
 		}
 
 		// Save user to database

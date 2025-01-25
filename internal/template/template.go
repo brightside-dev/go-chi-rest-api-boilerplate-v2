@@ -4,15 +4,12 @@ import (
 	"net/http"
 	"text/template"
 	"time"
-
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/model"
 )
 
 type TemplateData struct {
-	AdminUser model.AdminUser
-	Data      any
-	Form      any
-	Flash     string
+	Data  any
+	Form  any
+	Flash string
 }
 
 func humanDate(t time.Time) string {

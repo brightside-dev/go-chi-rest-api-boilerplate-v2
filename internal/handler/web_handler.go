@@ -25,5 +25,9 @@ func (wc *WebHandler) Users(w http.ResponseWriter, r *http.Request) {
 }
 
 func (wc *WebHandler) Login(w http.ResponseWriter, r *http.Request) {
-	template.RenderLogin(w, r, "login", nil)
+	data := &template.TemplateData{
+		Form: LoginForm{},
+	}
+
+	template.RenderLogin(w, r, "login", data)
 }
