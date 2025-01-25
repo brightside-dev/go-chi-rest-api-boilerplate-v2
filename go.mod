@@ -3,6 +3,8 @@ module github.com/brightside-dev/go-chi-rest-api-boilerplate-v2
 go 1.23.4
 
 require (
+	github.com/alexedwards/scs/mysqlstore v0.0.0-20240316134038-7e11d57e8885
+	github.com/alexedwards/scs/v2 v2.8.0
 	github.com/go-chi/chi/v5 v5.2.0
 	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/jwtauth/v5 v5.3.2
@@ -13,8 +15,6 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/alexedwards/scs/mysqlstore v0.0.0-20240316134038-7e11d57e8885 // indirect
-	github.com/alexedwards/scs/v2 v2.8.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.2 // indirect
