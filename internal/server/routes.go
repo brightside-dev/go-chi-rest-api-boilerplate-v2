@@ -58,6 +58,7 @@ func (s *Server) RegisterRoutes(container *Container) http.Handler {
 		r.Get("/admin/login", container.WebHandler.LoginFormHandler)
 		r.Get("/admin/dashboard", container.WebHandler.Dashboard)
 		r.Get("/admin/users", container.WebHandler.Users)
+		r.Get("/admin/logout", container.AuthAdminHandler.Logout)
 	})
 
 	return r

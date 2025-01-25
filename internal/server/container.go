@@ -46,7 +46,7 @@ func NewContainer(db database.Service) *Container {
 	testAPIHandler := handler.NewTestAPIHandler()
 	authAdminHandler := handler.NewAuthAdminHandler(adminUserRepo, *sessionManager)
 	adminUserHandler := handler.NewAdminUserHandler(adminUserRepo)
-	webHandler := handler.NewWebHandler()
+	webHandler := handler.NewWebHandler(*sessionManager)
 
 	return &Container{
 		// System

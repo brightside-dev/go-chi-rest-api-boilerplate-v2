@@ -96,6 +96,9 @@ func (h *AuthAdminHandler) LoginPostHandler(w http.ResponseWriter, r *http.Reque
 	// 'logged in'.
 	h.SessionManager.Put(r.Context(), "adminUserID", &user.ID)
 
+	// flash success
+	h.SessionManager.Put(r.Context(), "flash", "You've been logged in successfully")
+
 	http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
 }
 
@@ -148,11 +151,11 @@ func (h *AuthAdminHandler) RegisterPostHandler(w http.ResponseWriter, r *http.Re
 
 }
 
-func (h *AuthAdminHandler) LogoutPostHandler(w http.ResponseWriter, r *http.Request) {
+func (h *AuthAdminHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 	// Remove the authenticatedUserID from the session data so that the user is
 	// 'logged out'.
-	h.SessionManager.Remove(r.Context(), "authenticatedUserID")
+	h.SessionManager.Remove(r.Context(), "adminUserID")
 
 	// flash success
 	h.SessionManager.Put(r.Context(), "flash", "You've been logged out successfully")

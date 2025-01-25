@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"text/template"
 	"time"
+
+	"github.com/alexedwards/scs/v2"
 )
 
 type TemplateData struct {
@@ -18,6 +20,12 @@ func humanDate(t time.Time) string {
 
 var functions = template.FuncMap{
 	"humanDate": humanDate,
+}
+
+func NewTemplateData(r *http.Request, sessionManager *scs.SessionManager) *TemplateData {
+	return &TemplateData{
+		Flash: sessionManager.PopString(r.Context(), "flash"),
+	}
 }
 
 func RenderLogin(w http.ResponseWriter, r *http.Request, page string, data *TemplateData) {
