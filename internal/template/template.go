@@ -53,7 +53,8 @@ func RenderLogin(w http.ResponseWriter, r *http.Request, page string, data *Temp
 func RenderDashboard(w http.ResponseWriter, r *http.Request, page string, data *TemplateData) {
 	files := []string{
 		"./ui/html/base.html",
-		"./ui/html/partials/nav.html",
+		"./ui/html/partials/sidebar.html",
+		"./ui/html/partials/topbar.html",
 		"./ui/html/dashboard/" + page + ".html",
 	}
 
