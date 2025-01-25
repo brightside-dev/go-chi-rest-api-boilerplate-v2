@@ -1,5 +1,5 @@
 # 🥶 Golang + Chi Web Application Template
-The purpose of this project is twofold: first, to deepen my understanding of Golang, and second, to establish Golang as the foundation for all my future side projects. 
+The goal of this project is threefold: to learn Golang, to make it the foundation for all my future side projects, and to level up as a programmer.
 
 I chose Golang for my future side projects because working with PHP, which I use daily at my job, has started to feel more like a chore than an enjoyable challenge. 
 
