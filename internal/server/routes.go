@@ -48,13 +48,14 @@ func (s *Server) RegisterRoutes(container *Container) http.Handler {
 
 	// Public Admin Routes
 	r.Group(func(r chi.Router) {
-		r.Get("/admin/login", container.WebHandler.LoginFormHandler)
 		r.Post("/admin/login", container.AuthAdminHandler.LoginPostHandler)
 		r.Post("/admin/register", container.AuthAdminHandler.RegisterPostHandler)
 	})
 
 	// Protected Admin Routes
 	r.Group(func(r chi.Router) {
+		r.Use(AdminSessionAuthMiddleware(container.SessionManager))
+		r.Get("/admin/login", container.WebHandler.LoginFormHandler)
 		r.Get("/admin/dashboard", container.WebHandler.Dashboard)
 		r.Get("/admin/users", container.WebHandler.Users)
 	})

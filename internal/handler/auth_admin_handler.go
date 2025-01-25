@@ -71,8 +71,6 @@ func (h *AuthAdminHandler) LoginPostHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	fmt.Printf("user: %v\n", user)
-
 	if user == nil {
 		form.SystemErrors["message"] = "Invalid password and/or email"
 		h.RedirectToLoginForm(&form, w, r)
@@ -99,7 +97,7 @@ func (h *AuthAdminHandler) LoginPostHandler(w http.ResponseWriter, r *http.Reque
 	h.SessionManager.Put(r.Context(), "adminUserID", &user.ID)
 
 	// Redirect the user to the create snippet page.
-	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+	http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
 }
 
 func (h *AuthAdminHandler) RegisterPostHandler(w http.ResponseWriter, r *http.Request) {
