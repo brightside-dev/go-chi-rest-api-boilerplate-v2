@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/template"
@@ -25,6 +26,7 @@ func (wc *WebHandler) Users(w http.ResponseWriter, r *http.Request) {
 }
 
 func (wc *WebHandler) LoginFormHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("LoginFormHandler\n")
 	data := &template.TemplateData{
 		Form: LoginForm{},
 	}
