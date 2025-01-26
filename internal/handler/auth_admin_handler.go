@@ -102,6 +102,13 @@ func (h *AuthAdminHandler) Login(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
 }
 
+func (h *AuthAdminHandler) LoginForm(w http.ResponseWriter, r *http.Request) {
+	data := template.NewTemplateData(r, &h.SessionManager)
+	data.Form = LoginForm{}
+
+	template.RenderLogin(w, r, "login", data)
+}
+
 func (h *AuthAdminHandler) Register(w http.ResponseWriter, r *http.Request) {
 	req := dto.AdminUserCreateRequest{}
 

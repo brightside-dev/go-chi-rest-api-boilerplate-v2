@@ -24,7 +24,6 @@ func (s *Server) RegisterRoutes(container *Container) http.Handler {
 		r.Use(APIAuthMiddleware)
 		r.Get("/api/users", container.UserHandler.GetUsers())
 		r.Get("/api/users/{id}", container.UserHandler.GetUser())
-		r.Post("/api/create-user", container.UserHandler.CreateUser())
 	})
 
 	r.Group(func(r chi.Router) {
@@ -55,7 +54,7 @@ func (s *Server) RegisterRoutes(container *Container) http.Handler {
 	// Protected Admin Routes
 	r.Group(func(r chi.Router) {
 		r.Use(AdminSessionAuthMiddleware(container.SessionManager))
-		r.Get("/admin/login", container.WebHandler.LoginForm)
+		r.Get("/admin/login", container.AuthAdminHandler.LoginForm)
 		r.Get("/admin/dashboard", container.WebHandler.Dashboard)
 		r.Get("/admin/users", container.WebHandler.Users)
 		r.Get("/admin/logout", container.AuthAdminHandler.Logout)

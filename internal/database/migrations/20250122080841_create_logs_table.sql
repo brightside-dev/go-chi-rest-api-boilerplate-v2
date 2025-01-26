@@ -1,11 +1,11 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE logs (
-    id SERIAL PRIMARY KEY,
-    domain VARCHAR(255) NOT NULL,
-    level VARCHAR(255) NOT NULL,
-    message VARCHAR(255) NOT NULL,
-    context TEXT NOT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    level VARCHAR(10),
+    message TEXT,
+    attributes JSON,
+    source VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 -- +goose StatementEnd

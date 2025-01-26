@@ -2,6 +2,8 @@ package util
 
 import (
 	"fmt"
+	"log/slog"
+	"net/http"
 	"time"
 )
 
@@ -25,4 +27,49 @@ func ParseDateTime(dateTime interface{}) (time.Time, error) {
 	default:
 		return time.Time{}, fmt.Errorf("unexpected type for date time: %T", v)
 	}
+}
+
+func GetHTTPRequestContext(r *http.Request) map[string]interface{} {
+	return map[string]interface{}{
+		"user_agent": r.UserAgent(),
+		"ip_address": r.RemoteAddr,
+		"method":     r.Method,
+		"path":       r.URL.Path,
+	}
+}
+
+func MapToSlogAttrs(context map[string]interface{}) []slog.Attr {
+	var attrs []slog.Attr
+	for key, value := range context {
+		switch v := value.(type) {
+		case string:
+			attrs = append(attrs, slog.String(key, v))
+		case int:
+			attrs = append(attrs, slog.Int(key, v))
+		case bool:
+			attrs = append(attrs, slog.Bool(key, v))
+		case float64:
+			attrs = append(attrs, slog.Float64(key, v))
+		default:
+			// If the value type is not supported, use Any
+			attrs = append(attrs, slog.Any(key, v))
+		}
+	}
+	return attrs
+}
+
+func LogHTTPRequestError(logger *slog.Logger, msg string, r *http.Request) {
+	additionalContext := GetHTTPRequestContext(r)
+	// Convert the map to slog.Attr slice
+	attrs := MapToSlogAttrs(additionalContext)
+
+	// Create a slice to hold the arguments to pass to the Error method
+	var anyAttrs []interface{}
+	for _, attr := range attrs {
+		// Extract the key and value from each slog.Attr and append it as an any value
+		anyAttrs = append(anyAttrs, attr.Key, attr.Value)
+	}
+
+	// Log the error with the additional context as individual arguments
+	logger.Error(msg, anyAttrs...)
 }

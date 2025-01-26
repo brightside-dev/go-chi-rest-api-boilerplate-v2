@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/dto"
+	customError "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/error"
 	APIResponse "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/response"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/model"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/repository"
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/template"
 	"github.com/go-chi/jwtauth/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -39,26 +39,21 @@ func (h *AuthHandler) Login() http.HandlerFunc {
 		decoder := json.NewDecoder(r.Body)
 		err := decoder.Decode(&req)
 		if err != nil {
-			APIResponse.ErrorResponse(w, r, fmt.Errorf("failed to decode request: %w", err), http.StatusBadRequest)
+			APIResponse.ErrorResponse(w, r, customError.ErrInvalidRequestBody, http.StatusInternalServerError)
 			return
 		}
 
 		// Login logic
 		user, err := h.UserRepository.GetUserByEmail(r.Context(), req.Email)
-		if err != nil {
-			APIResponse.ErrorResponse(w, r, fmt.Errorf("failed to get user: %w", err), http.StatusUnauthorized)
-			return
-		}
-
-		if user == nil {
-			APIResponse.ErrorResponse(w, r, fmt.Errorf("user not found"), http.StatusUnauthorized)
+		if err != nil || user == nil {
+			APIResponse.ErrorResponse(w, r, customError.ErrInvalidEmailOrPassword, http.StatusUnauthorized)
 			return
 		}
 
 		// Compare the password
 		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 		if err != nil {
-			APIResponse.ErrorResponse(w, r, fmt.Errorf("invalid password and/or email"), http.StatusUnauthorized)
+			APIResponse.ErrorResponse(w, r, customError.ErrInvalidEmailOrPassword, http.StatusUnauthorized)
 			return
 		}
 
@@ -71,7 +66,9 @@ func (h *AuthHandler) Login() http.HandlerFunc {
 			"exp": time.Now().Add(15 * time.Minute).Unix(), // Access token valid for 15 minutes
 		})
 		if err != nil {
-			APIResponse.ErrorResponse(w, r, fmt.Errorf("failed to generate access token: %w", err), http.StatusInternalServerError)
+			// TODO log to DB
+			//dbError := customError.NewSystemError(err)
+			APIResponse.ErrorResponse(w, r, customError.ErrInternalServerError, http.StatusInternalServerError)
 			return
 		}
 
@@ -113,13 +110,6 @@ func (h *AuthHandler) Login() http.HandlerFunc {
 			Data:    repsonseDTO,
 		}, http.StatusOK)
 	}
-}
-
-func (wc *WebHandler) LoginForm(w http.ResponseWriter, r *http.Request) {
-	data := template.NewTemplateData(r, &wc.SessionManager)
-	data.Form = LoginForm{}
-
-	template.RenderLogin(w, r, "login", data)
 }
 
 func (h *AuthHandler) Register() http.HandlerFunc {
