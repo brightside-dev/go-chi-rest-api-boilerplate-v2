@@ -10,8 +10,7 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 ### 🏗️ TODO
 1. Implement better project configuration & env variables management
 2. Implement DB error logging 
-3. Implement cronjob service - implement something like Symfony's command package
-4. Implement Mailgun email service
+4. Implement Mailgun email service (Mailcatcher for dev)
 5. Implement Firebase push notifications service
 6. Implement web sockets service (Pusher, PubNub etc.)
 7. Implement tests
@@ -21,16 +20,22 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 * MySQL
 * Router & Middleware: https://github.com/go-chi/chi
 * Database migrations are handled by Goose: https://github.com/pressly/goose
-* Godotenv for env variables
+* Godotenv for env variables: https://github.com/joho/godotenv
+* Cobra for easy command management: https://github.com/spf13/cobra
 
 ### 🚀 Features
 **1. REST API**
-     <br> * JWT Authentication: https://github.com/go-chi/jwtauth
+    <br> * JWT Authentication: https://github.com/go-chi/jwtauth
 
-**2. Admin CMS Dashboard**
+**2. Commands Service**
+    <br> * With the use of Cobra, we can integrate a command-line interface (CLI) into our Go web application, allowing us to run custom processes directly from the terminal or programmatically through code. This is especially useful for executing asynchronous or synchronous tasks, either within the same goroutine or in separate goroutines, depending on the application's requirements. Also useful for running certain commands as cron jobs.
+
+**3. Admin CMS Dashboard**
     <br>* Session authentication and manager: https://github.com/alexedwards/scs
     <br>* CMS dashboard theme: https://github.com/pro-dev-ph/bootstrap-simple-admin-template
     <br>* Minimal JS to handle necessary CMS animations, charts and data tables
+
+**4. Emailing** WIP
 
 ### ⛩️ Folder Structure
 ```
