@@ -55,12 +55,9 @@ func (h *DBLogHandler) Handle(ctx context.Context, r slog.Record) error {
 		return true
 	})
 
-	// If the source is empty, manually capture it from the runtime.
-	if source == "" {
-		_, file, line, ok := runtime.Caller(5) // Capture file and line number, adjust the call depth as needed
-		if ok {
-			source = fmt.Sprintf("%s:%d", file, line)
-		}
+	_, file, line, ok := runtime.Caller(5) // Capture file and line number, adjust the call depth as needed
+	if ok {
+		source = fmt.Sprintf("%s:%d", file, line)
 	}
 
 	// Marshal attributes into a JSON string.
