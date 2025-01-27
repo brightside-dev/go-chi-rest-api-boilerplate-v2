@@ -18,10 +18,12 @@ import (
 
 type Container struct {
 	// System
+	Env            string
 	Router         *chi.Mux
 	SessionManager *scs.SessionManager
 	JWTAuth        *jwtauth.JWTAuth
 	DBLogger       *slog.Logger
+
 	// Handlers
 	TestAPIHandler   *handler.TestAPIHandler
 	WebHandler       *handler.WebHandler
@@ -32,6 +34,8 @@ type Container struct {
 }
 
 func NewContainer(db database.Service) *Container {
+	// Get the environment
+	env := os.Getenv("APP_ENV")
 
 	// Session Manager
 	sessionManager := scs.New()
@@ -64,6 +68,7 @@ func NewContainer(db database.Service) *Container {
 
 	return &Container{
 		// System
+		Env:            env,
 		Router:         chi.NewRouter(),
 		SessionManager: sessionManager,
 		JWTAuth:        tokenAuth,
@@ -76,6 +81,8 @@ func NewContainer(db database.Service) *Container {
 		AuthHandler:      authHandler,
 		AdminUserHandler: adminUserHandler,
 		UserHandler:      userHandler,
+
+		// Services
 	}
 
 }
