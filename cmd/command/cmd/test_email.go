@@ -22,11 +22,9 @@ var testEmailCmd = &cobra.Command{
 		)
 
 		data := &map[string]string{
-			"to":      "a@me.com",
-			"subject": "Test Email",
-			"name":    "John Doe",
+			"name": "John Doe",
 		}
-		emailService.SendEmail("test_email", *data)
+		emailService.SendEmail("test_email", "This is from command", []string{"a@me.com"}, *data)
 	},
 }
 

@@ -12,6 +12,7 @@ import (
 
 type EmailServiceInterface interface {
 	SendEmail(to []string, subject string, body string) error
+	smptSend(to []string, subject string, htmlBody string) error
 }
 
 type EmailService struct {
@@ -44,7 +45,11 @@ func NewEmailService(
 	}
 }
 
-func (s *EmailService) SendEmail(templateName string, data map[string]string) error {
+func (s *EmailService) SendEmail(
+	templateName string,
+	subject string,
+	to []string,
+	data map[string]string) error {
 	// Parse the HTML template
 	tmpl, err := template.ParseFiles("internal/email/templates/" + templateName + ".html")
 	if err != nil {
@@ -57,17 +62,7 @@ func (s *EmailService) SendEmail(templateName string, data map[string]string) er
 		log.Fatalf("Failed to execute template: %v", err)
 	}
 
-	to, ok := data["to"]
-	if !ok {
-		return fmt.Errorf("to email address not provided")
-	}
-
-	subject, ok := data["subject"]
-	if !ok {
-		return fmt.Errorf("email subject not provided")
-	}
-
-	err = s.smptSend([]string{to}, subject, rendered.String())
+	err = s.smptSend(to, subject, rendered.String())
 	if err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 
