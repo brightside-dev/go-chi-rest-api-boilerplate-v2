@@ -23,15 +23,15 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 8. Implement CI/CD using Github
 
 ### 🧰 Project Tools & Packages
-* MySQL
+* MySQL driver: https://github.com/go-sql-driver/mysql
 * Router & Middleware: https://github.com/go-chi/chi
-* Database migrations are handled by Goose: https://github.com/pressly/goose
+* Goose for DB migrations: https://github.com/pressly/goose
 * Godotenv for env variables: https://github.com/joho/godotenv
 * Cobra for easy command management: https://github.com/spf13/cobra
 
 ### 🚀 Features
 **1. REST API**
-    <br> * Controller(handler)/Repository pattern for separation of concern minimal complexity
+    <br> * Controller(handler)/Repository pattern for separation of concern with minimal complexity
     <br> * JWT Authentication: https://github.com/go-chi/jwtauth
 
 **2. Commands Service**
