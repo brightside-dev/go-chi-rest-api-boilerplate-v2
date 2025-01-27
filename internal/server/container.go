@@ -9,11 +9,14 @@ import (
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/database"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/email"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/logger"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/repository"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 type Container struct {
@@ -31,6 +34,9 @@ type Container struct {
 	AuthHandler      *handler.AuthHandler
 	AdminUserHandler *handler.AdminUserHandler
 	UserHandler      *handler.UserHandler
+
+	// Services
+	EmailService *email.EmailService
 }
 
 func NewContainer(db database.Service) *Container {
@@ -66,6 +72,15 @@ func NewContainer(db database.Service) *Container {
 	adminUserHandler := handler.NewAdminUserHandler(adminUserRepo)
 	webHandler := handler.NewWebHandler(*sessionManager)
 
+	// Services
+	emailService := email.NewEmailService(
+		env,
+		os.Getenv("FROM_EMAIL"),
+		os.Getenv("FROM_EMAIL_PASSWORD"),
+		os.Getenv("FROM_EMAIL_SMTP"),
+		os.Getenv("EMAIL_SMTP_ADDRESS"),
+	)
+
 	return &Container{
 		// System
 		Env:            env,
@@ -83,6 +98,7 @@ func NewContainer(db database.Service) *Container {
 		UserHandler:      userHandler,
 
 		// Services
+		EmailService: emailService,
 	}
 
 }
