@@ -7,6 +7,12 @@ I've tried a bunch of languages and frameworks over the years, but Golang is the
 
 This project was initially bootstrapped using https://github.com/Melkeydev/go-blueprint
 
+### Setup
+1. Install MySQL and create a database
+2. Create a .env file and modify DB credentials
+3. Run DB migrations `goose up`
+4. Start server `go run ./cmd/api `
+
 ### 🏗️ TODO
 1. Implement better project configuration & env variables management
 2. Implement DB error logging 
@@ -25,6 +31,7 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 
 ### 🚀 Features
 **1. REST API**
+    <br> * Controller(handler)/Repository pattern for separation of concern minimal complexity
     <br> * JWT Authentication: https://github.com/go-chi/jwtauth
 
 **2. Commands Service**
