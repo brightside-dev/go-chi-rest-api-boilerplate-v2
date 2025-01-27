@@ -11,7 +11,8 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 1. Install MySQL and create a database
 2. Create a .env file and modify DB credentials
 3. Run DB migrations `goose up`
-4. Start server `go run ./cmd/api `
+4. Start server `go run ./cmd/api`
+5. Test web server: `curl localhost:8080/api/health` or `curl localhost:8080/api/pong`
 
 ### 🏗️ TODO
 1. Implement Mailgun email service (Mailcatcher for dev)
