@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"fmt"
+	"log"
 
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/spf13/cobra"
 )
 
@@ -10,6 +11,17 @@ var testEmailCmd = &cobra.Command{
 	Use:   "test_email",
 	Short: "Send a test email",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Sending test email\n")
+		if container == nil {
+			log.Fatal("Container is not initialized")
+		}
+
+		data := &map[string]string{
+			"name": "John Doe",
+		}
+		container.EmailService.SendEmail("test_email", "This is from command", []string{"a@me.com"}, *data)
 	},
+}
+
+func init() {
+	rootCmd.AddCommand(testEmailCmd)
 }

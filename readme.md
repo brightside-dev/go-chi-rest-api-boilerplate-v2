@@ -14,13 +14,15 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 4. Start server `go run ./cmd/api `
 
 ### 🏗️ TODO
-1. Implement better project configuration & env variables management
-2. Implement DB error logging 
-4. Implement Mailgun email service (Mailcatcher for dev)
-5. Implement Firebase push notifications service
-6. Implement web sockets service (Pusher, PubNub etc.)
-7. Implement tests
-8. Implement CI/CD using Github
+1. Implement Mailgun email service (Mailcatcher for dev)
+2. Implement Firebase push notifications service
+3. Implement web sockets service (Pusher, PubNub etc.)
+4. Implement tests
+5. Implement CI/CD using Github
+
+### 🛞 Refactor (when time permits)
+* Email service - figure out a good way to create services
+* Environment variables
 
 ### 🧰 Project Tools & Packages
 * MySQL driver: https://github.com/go-sql-driver/mysql

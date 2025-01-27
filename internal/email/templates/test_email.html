@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    table {
+      border-spacing: 0;
+      border-collapse: collapse;
+    }
+    .email-container {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border: 1px solid #dddddd;
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+  <table class="email-container" align="center" border="0" cellpadding="0" cellspacing="0" width="600">
+    <tr>
+      <td align="center" style="background-color: #0073e6; color: #ffffff; padding: 20px; font-size: 24px; font-weight: bold;">
+        Welcome to Our Service!
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 20px; color: #333333; line-height: 1.5; font-size: 16px;">
+        <p>Hi {{.name}},</p>
+        <p>Thank you for joining us! We are excited to have you on board. Below are a few things you can explore:</p>
+        <ul style="padding-left: 20px; margin: 10px 0;">
+          <li>Get started with our features.</li>
+          <li>Explore resources to help you succeed.</li>
+          <li>Contact our support team for assistance.</li>
+        </ul>
+        <p>If you have any questions, feel free to <a href="#" style="color: #0073e6; text-decoration: none;">reach out</a> to us anytime.</p>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" style="background-color: #f4f4f4; padding: 20px; font-size: 14px; color: #555555;">
+        © 2025 Your Company Name. All rights reserved.<br>
+        <a href="#" style="color: #0073e6; text-decoration: none;">Unsubscribe</a> | <a href="#" style="color: #0073e6; text-decoration: none;">Privacy Policy</a>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
