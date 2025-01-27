@@ -12,7 +12,7 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 2. Create a .env file and modify DB credentials
 3. Run DB migrations `goose up`
 4. Start server `go run ./cmd/api`
-5. Test web server: `curl localhost:8080/api/health` or `curl localhost:8080/api/pong`
+5. Test web server: `curl localhost:8080/api/health` or `curl localhost:8080/api/ping`
 
 ### 🏗️ TODO
 1. Implement Mailgun email service (Mailcatcher for dev)
