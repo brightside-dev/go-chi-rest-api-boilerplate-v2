@@ -53,22 +53,21 @@ func (s *EmailService) SendEmail(
 	subject string,
 	to []string,
 	data map[string]string) error {
-	// Parse the HTML template
+
+	// Parse and render the HTML template
 	tmpl, err := template.ParseFiles("internal/email/templates/" + templateName + ".html")
 	if err != nil {
 		return fmt.Errorf("failed to parse template: %w", err)
 	}
 
-	// Render the template with the map data
 	var rendered bytes.Buffer
 	if err := tmpl.Execute(&rendered, data); err != nil {
 		return fmt.Errorf("failed to execute template: %v", err)
 	}
 
-	err = s.smptSend(to, subject, rendered.String())
-	if err != nil {
+	// Send the email
+	if err := s.smptSend(to, subject, rendered.String()); err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
-
 	}
 
 	return nil
