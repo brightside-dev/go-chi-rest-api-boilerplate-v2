@@ -60,10 +60,6 @@ func NewContainer(db database.Service) *Container {
 	// DB Logger
 	logger := NewLogger(db.GetDB())
 
-	// Log some messages with source included.
-	logger.Info("User logged in", slog.String("user", "john_doe"), slog.Int("user_id", 42))
-	logger.Error("Database connection failed", slog.String("db", "main"))
-
 	// Handlers
 	userHandler := handler.NewUserHandler(userRepo, logger)
 	authHandler := handler.NewAuthHandler(userRepo, refreshTokenRepo)
@@ -75,6 +71,7 @@ func NewContainer(db database.Service) *Container {
 	// Services
 	emailService := email.NewEmailService(
 		env,
+		logger,
 		os.Getenv("FROM_EMAIL"),
 		os.Getenv("FROM_EMAIL_PASSWORD"),
 		os.Getenv("FROM_EMAIL_SMTP"),
