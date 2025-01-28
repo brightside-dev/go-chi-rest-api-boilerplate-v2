@@ -15,11 +15,10 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 5. Test web server: `curl localhost:8080/api/health` or `curl localhost:8080/api/ping`
 
 ### 🏗️ TODO
-1. Implement Mailgun email service (Mailcatcher for dev)
-2. Implement Firebase push notifications service
-3. Implement web sockets service (Pusher, PubNub etc.)
-4. Implement tests
-5. Implement CI/CD using Github
+1. Implement Mailgun Service - https://github.com/mailgun/mailgun-go
+2. Implement Pusher Beams Service - https://github.com/pusher/push-notifications-go
+3. Implement tests
+4. Implement CI/CD using Github Actions
 
 ### 🛞 Refactor (when time permits)
 * Email service - figure out a good way to create services
