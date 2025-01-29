@@ -18,7 +18,7 @@ var testMailgunCmd = &cobra.Command{
 			"name": "John Doe",
 		}
 
-		container.EmailService.SendToMailgun("test_email", "This is from command", []string{"a@me.com"}, *data)
+		container.EmailService.SendEmail("test_email", "This is from command", []string{"a@me.com"}, *data)
 	},
 }
 

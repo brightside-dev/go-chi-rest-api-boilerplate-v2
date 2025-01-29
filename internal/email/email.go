@@ -21,6 +21,7 @@ type EmailService struct {
 	Env       string
 	Logger    *slog.Logger
 	EmailAuth *EmailAuth
+	Mailgun   *pkg.Mailgun
 }
 
 type EmailAuth struct {
@@ -47,6 +48,7 @@ func NewEmailService(
 			SMTPHost:          smtpHost,
 			SMTPAddr:          smtpAddr,
 		},
+		Mailgun: pkg.NewMailgun(),
 	}
 }
 
@@ -67,15 +69,23 @@ func (s *EmailService) SendEmail(
 		return fmt.Errorf("failed to execute template: %v", err)
 	}
 
-	// Send the email
-	if err := s.smptSend(to, subject, rendered.String()); err != nil {
-		return fmt.Errorf("failed to send email: %w", err)
+	// Conditionally send email based on environment
+	if s.Env == "local" {
+		// Send email using MailCatcher
+		if err := s.localSend(to, subject, rendered.String()); err != nil {
+			return fmt.Errorf("failed to send email: %w", err)
+		}
+	} else {
+		// Send email using Mailgun
+		if _, err := s.Mailgun.SendEmail(s.EmailAuth.FromEmail, subject, to[0], rendered); err != nil {
+			return fmt.Errorf("failed to send email: %w", err)
+		}
 	}
 
 	return nil
 }
 
-func (s *EmailService) smptSend(to []string, subject string, htmlBody string) error {
+func (s *EmailService) localSend(to []string, subject string, htmlBody string) error {
 	var auth smtp.Auth = nil
 	if s.Env != "local" {
 		auth = smtp.PlainAuth("", s.EmailAuth.FromEmail, "", s.EmailAuth.SMTPHost)
@@ -95,28 +105,6 @@ func (s *EmailService) smptSend(to []string, subject string, htmlBody string) er
 	if err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
-
-	return nil
-}
-
-func (s *EmailService) SendToMailgun(templateName string,
-	subject string,
-	to []string,
-	data map[string]string) error {
-	mailgun := pkg.NewMailgun()
-
-	// Parse and render the HTML template
-	tmpl, err := template.ParseFiles("internal/email/templates/" + templateName + ".html")
-	if err != nil {
-		return fmt.Errorf("failed to parse template: %w", err)
-	}
-
-	var rendered bytes.Buffer
-	if err := tmpl.Execute(&rendered, data); err != nil {
-		return fmt.Errorf("failed to execute template: %v", err)
-	}
-
-	mailgun.SendEmail(s.EmailAuth.FromEmail, subject, to[0], rendered)
 
 	return nil
 }
