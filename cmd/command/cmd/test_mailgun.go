@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -18,7 +19,10 @@ var testMailgunCmd = &cobra.Command{
 			"name": "John Doe",
 		}
 
-		container.EmailService.SendEmail("test_email", "This is from command", []string{"a@me.com"}, *data)
+		err := container.EmailService.SendEmail("test_email", "This is from command", []string{"battousai.dev@proton.me"}, *data)
+		if err != nil {
+			fmt.Println(err)
+		}
 	},
 }
 
