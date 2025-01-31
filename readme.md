@@ -15,14 +15,10 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 5. Test web server: `curl localhost:8080/api/health` or `curl localhost:8080/api/ping`
 
 ### 🏗️ TODO
-1. Implement Mailgun Service - https://github.com/mailgun/mailgun-go - refactor to use multiple providers
+1. Refactor email service to use interface for multiple email providers - https://github.com/mailgun/mailgun-go 
 2. Implement Pusher Beams Service - https://github.com/pusher/push-notifications-go
 3. Implement tests
 4. Implement CI/CD using Github Actions
-
-### 🛞 Refactor (when time permits)
-* Email service - figure out a good way to create services
-* Environment variables
 
 ### 🧰 Project Tools & Packages
 * MySQL driver: https://github.com/go-sql-driver/mysql
