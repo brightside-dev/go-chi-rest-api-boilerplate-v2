@@ -18,7 +18,7 @@ var testEmailCmd = &cobra.Command{
 		data := &map[string]string{
 			"name": "John Doe",
 		}
-		container.EmailService.SendEmail("afl_draft", "This is from command", []string{"a@me.com"}, *data)
+		container.EmailService.SendEmail("test_email", "This is from command", []string{"a@me.com"}, *data)
 	},
 }
 

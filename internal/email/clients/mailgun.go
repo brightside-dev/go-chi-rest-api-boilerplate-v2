@@ -1,4 +1,4 @@
-package pkg
+package email_clients
 
 import (
 	"bytes"

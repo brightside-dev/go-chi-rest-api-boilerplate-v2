@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"net/smtp"
 
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/pkg"
+	Client "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/email/clients"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -21,7 +21,7 @@ type EmailService struct {
 	Env       string
 	Logger    *slog.Logger
 	EmailAuth *EmailAuth
-	Mailgun   *pkg.Mailgun
+	Mailgun   *Client.Mailgun
 }
 
 type EmailAuth struct {
@@ -48,7 +48,7 @@ func NewEmailService(
 			SMTPHost:          smtpHost,
 			SMTPAddr:          smtpAddr,
 		},
-		Mailgun: pkg.NewMailgun(),
+		Mailgun: Client.NewMailgun(),
 	}
 }
 
