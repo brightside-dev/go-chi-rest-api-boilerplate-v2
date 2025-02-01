@@ -7,6 +7,8 @@ import (
 	"log/slog"
 	"net/smtp"
 
+	Client "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/email/clients"
+
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -19,6 +21,7 @@ type EmailService struct {
 	Env       string
 	Logger    *slog.Logger
 	EmailAuth *EmailAuth
+	Mailgun   *Client.Mailgun
 }
 
 type EmailAuth struct {
@@ -45,6 +48,7 @@ func NewEmailService(
 			SMTPHost:          smtpHost,
 			SMTPAddr:          smtpAddr,
 		},
+		Mailgun: Client.NewMailgun(),
 	}
 }
 
@@ -65,15 +69,23 @@ func (s *EmailService) SendEmail(
 		return fmt.Errorf("failed to execute template: %v", err)
 	}
 
-	// Send the email
-	if err := s.smptSend(to, subject, rendered.String()); err != nil {
-		return fmt.Errorf("failed to send email: %w", err)
+	// Conditionally send email based on environment
+	if s.Env == "local" {
+		// Send email using MailCatcher
+		if err := s.localSend(to, subject, rendered.String()); err != nil {
+			return fmt.Errorf("failed to send email: %w", err)
+		}
+	} else {
+		// Send email using Mailgun
+		if _, err := s.Mailgun.SendEmail(s.EmailAuth.FromEmail, subject, to[0], rendered); err != nil {
+			return fmt.Errorf("failed to send email: %w", err)
+		}
 	}
 
 	return nil
 }
 
-func (s *EmailService) smptSend(to []string, subject string, htmlBody string) error {
+func (s *EmailService) localSend(to []string, subject string, htmlBody string) error {
 	var auth smtp.Auth = nil
 	if s.Env != "local" {
 		auth = smtp.PlainAuth("", s.EmailAuth.FromEmail, "", s.EmailAuth.SMTPHost)
