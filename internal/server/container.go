@@ -9,10 +9,11 @@ import (
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/database"
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/email"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler"
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/logger"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/repository"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/service"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/service/email"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/service/logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 
@@ -62,6 +63,7 @@ func NewContainer(db database.Service) *Container {
 
 	// Services
 	emailService := email.NewEmailService(logger)
+	authService := service.NewAuthService(&db, emailService, userRepo, refreshTokenRepo)
 	// pushService, err := push.NewPushService(logger)
 	// if err != nil {
 	// 	logger.Error("Failed to create push service")
@@ -69,7 +71,7 @@ func NewContainer(db database.Service) *Container {
 
 	// Handlers
 	userHandler := handler.NewUserHandler(userRepo, logger)
-	authHandler := handler.NewAuthHandler(emailService, userRepo, refreshTokenRepo, logger)
+	authHandler := handler.NewAuthHandler(emailService, authService)
 	testAPIHandler := handler.NewTestAPIHandler()
 	authAdminHandler := handler.NewAuthAdminHandler(adminUserRepo, *sessionManager)
 	adminUserHandler := handler.NewAdminUserHandler(adminUserRepo)

@@ -8,7 +8,7 @@ import (
 	"net/smtp"
 	"os"
 
-	Client "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/email/clients"
+	Client "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/service/email/clients"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/util"
 
 	_ "github.com/joho/godotenv/autoload"
