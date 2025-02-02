@@ -18,7 +18,10 @@ var testEmailCmd = &cobra.Command{
 		data := &map[string]string{
 			"name": "John Doe",
 		}
-		container.EmailService.Send("test_email", "This is from command", []string{"a@me.com"}, *data)
+		err := container.EmailService.Send("test_email", "This is from command", []string{"a@me.com"}, *data)
+		if err != nil {
+			log.Fatalf("Failed to send email: %v", err)
+		}
 	},
 }
 

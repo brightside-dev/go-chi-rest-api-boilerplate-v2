@@ -43,8 +43,8 @@ func NewEmailService(
 		EmailAuth: &EmailAuth{
 			FromEmail:         os.Getenv("FROM_EMAIL"),
 			FromEmailPassword: os.Getenv("FROM_EMAIL_PASSWORD"),
-			SMTPHost:          os.Getenv("SMTP_HOST"),
-			SMTPAddr:          os.Getenv("SMTP_ADDR"),
+			SMTPHost:          os.Getenv("FROM_EMAIL_SMTP"),
+			SMTPAddr:          os.Getenv("EMAIL_SMTP_ADDRESS"),
 		},
 		Mailgun: Client.NewMailgun(),
 	}
