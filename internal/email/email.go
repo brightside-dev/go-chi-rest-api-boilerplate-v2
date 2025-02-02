@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log/slog"
 	"net/smtp"
+	"os"
 
 	Client "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/email/clients"
 
@@ -13,7 +14,7 @@ import (
 )
 
 type EmailServiceInterface interface {
-	SendEmail(to []string, subject string, body string) error
+	Send(to []string, subject string, body string) error
 	smptSend(to []string, subject string, htmlBody string) error
 }
 
@@ -32,27 +33,22 @@ type EmailAuth struct {
 }
 
 func NewEmailService(
-	env string,
 	logger *slog.Logger,
-	fromEmail string,
-	fromEmailPassword string,
-	smtpHost string,
-	smtpAddr string,
 ) *EmailService {
 	return &EmailService{
-		Env:    env,
+		Env:    os.Getenv("APP_ENV"),
 		Logger: logger,
 		EmailAuth: &EmailAuth{
-			FromEmail:         fromEmail,
-			FromEmailPassword: fromEmailPassword,
-			SMTPHost:          smtpHost,
-			SMTPAddr:          smtpAddr,
+			FromEmail:         os.Getenv("FROM_EMAIL"),
+			FromEmailPassword: os.Getenv("FROM_EMAIL_PASSWORD"),
+			SMTPHost:          os.Getenv("SMTP_HOST"),
+			SMTPAddr:          os.Getenv("SMTP_ADDR"),
 		},
 		Mailgun: Client.NewMailgun(),
 	}
 }
 
-func (s *EmailService) SendEmail(
+func (s *EmailService) Send(
 	templateName string,
 	subject string,
 	to []string,
@@ -82,6 +78,8 @@ func (s *EmailService) SendEmail(
 		}
 	}
 
+	// Log
+
 	return nil
 }
 
@@ -107,4 +105,8 @@ func (s *EmailService) localSend(to []string, subject string, htmlBody string) e
 	}
 
 	return nil
+}
+
+func (s *EmailService) log(to []string, subject string, htmlBody string) {
+	s.Logger.Info("Email sent", "to", to, "subject", subject, "body", htmlBody)
 }
