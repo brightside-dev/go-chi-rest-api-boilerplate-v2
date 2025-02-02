@@ -15,10 +15,9 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 5. Test web server: `curl localhost:8080/api/health` or `curl localhost:8080/api/ping`
 
 ### 🏗️ TODO
-1. Refactor email service to use interface for multiple email providers - https://github.com/mailgun/mailgun-go 
-2. Implement Pusher Beams Service - https://github.com/pusher/push-notifications-go
-3. Implement tests
-4. Implement CI/CD using Github Actions
+1. Use Firebase messaging for both iOS and Android push notifications
+2. Implement tests
+3. Implement CI/CD using Github Actions
 
 ### 🧰 Project Tools & Packages
 * MySQL driver: https://github.com/go-sql-driver/mysql
@@ -26,6 +25,9 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 * Goose for DB migrations: https://github.com/pressly/goose
 * Godotenv for env variables: https://github.com/joho/godotenv
 * Cobra for easy command management: https://github.com/spf13/cobra
+* Mailgun for email sends: https://github.com/mailgun/mailgun-go
+* APN for iOS push notifications: https://github.com/sideshow/apns2
+* Firebase Messaging for Android push notifications: https://firebase.google.com/go
 
 ### 🚀 Features
 **1. REST API**
@@ -40,38 +42,98 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
     <br>* CMS dashboard theme: https://github.com/pro-dev-ph/bootstrap-simple-admin-template
     <br>* Minimal JS to handle necessary CMS animations, charts and data tables
 
-**4. Emailing** WIP
+**4. Emails** 
+    <br>* Local SMTP using Mailcatcher for easy local email development
+    <br>* Mailgun service for production email sending
+
+**5. Push Notifications**
+    <br>* APN for iOS push notifications
+    <br>* Firebase FCM for android push notifications - might refactor to use Firebase to handle all push notifications
+
+**6. Database Logging**
+    <br>* DB logger using log/slog
 
 ### ⛩️ Folder Structure
 ```
-├── cmd/
-│   └── main.go --entry point
-├── internal/
-│   ├── container/
-│   │   └── container.go       --dependency injection container
-│   ├── database/
-│   │   └── database.go        --db service
-│   ├── handler/               --handlers aka controllers
+/home/andrew/Go Projects/go-chi-rest-api-boilerplate-v2/
+├── cmd/                    # Entry point for CLI commands
+│   ├── command/            # CLI commands
+│   │   ├── cmd/
+│   │   │   ├── root.go
+│   │   │   ├── test_email.go
+│   │   │   └── test_mailgun.go
+│   │   └── main.go         # Main entry point
+│
+├── internal/               # Internal application logic
+│   ├── database/           # Database service
+│   │   └── database.go
+│   ├── email/              # Email service
+│   │   ├── email.go
+│   │   └── templates/
+│   │       └── test_email.html
+│   ├── handler/            # Handlers (controllers)
+│   │   ├── auth_admin_handler.go
+│   │   ├── auth_handler.go
+│   │   ├── middleware.go
 │   │   ├── user_handler.go
-│   ├── repository/            --repositories
+│   │   ├── web_handler.go
+│   │   ├── dto/            # Data Transfer Objects
+│   │   │   └── dto.go
+│   │   ├── response/       # Response formatting
+│   │   │   └── response.go
+│
+│   ├── push/               # Push notification service
+│   │   ├── clients/        # Push clients
+│   │   │   ├── apn.go
+│   │   │   ├── fcm.go
+│   │   └── push.go         # Unified push service
+│
+│   ├── repository/         # Data access layer (repositories)
+│   │   ├── admin_user_repository.go
 │   │   ├── user_repository.go
-│   ├── server/                
-│   │   ├── routes.go          --routes
-│   │   └── server.go          --server service
-│   ├── template/
-│   │   └── template.go        --template service
-│   └── model/
-│       └── model.go           --entities
-├── ui/                        --cms views (html, css, js)
-│   ├── assets/
+│   │   └── refresh_token_repository.go
+│
+│   ├── server/             # Server service
+│   │   ├── container.go    # Dependency injection container
+│   │   ├── routes.go       # Route definitions
+│   │   └── server.go       # Server initialization
+│
+│   ├── template/           # Template rendering service
+│   │   └── template.go
+│
+│   ├── model/              # Database models (entities)
+│   │   └── model.go
+│
+├── ui/                     # Frontend assets and views
+│   ├── assets/             # Static assets (CSS, JS, Images)
 │   │   ├── css/
 │   │   ├── img/
 │   │   ├── js/
 │   │   ├── vendor/
-│   ├── html/
+│   │       ├── bootstrap/
+│   │       │   ├── css/bootstrap.min.css
+│   │       │   ├── js/bootstrap.min.js
+│   │       ├── chartjs/
+│   │       │   ├── chart.js
+│   │       │   ├── Chart.min.js
+│   │       ├── datatables/
+│   │           ├── DataTables-1.10.25/js/jquery.dataTables.js
+│   │           ├── datatables.js
+│
+│   ├── html/               # HTML views
 │   │   ├── dashboard/
 │   │   ├── partials/
 │   │   └── base.html
+│
+│   ├── templates/          # HTML templates
+│   │   └── dashboard.html
+│
+├── vendor/                 # Dependencies (managed by Go modules)
+│   └── dependencies
+│
+├── .env                    # Environment variables
+├── readme.md               # Documentation
+└── starter.md              # Starter guide
 ```
 
 ### Useful Resources
