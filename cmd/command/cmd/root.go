@@ -54,4 +54,5 @@ func init() {
 
 	rootCmd.AddCommand(customCmd)
 	rootCmd.AddCommand(testEmailCmd)
+	rootCmd.AddCommand(testFcmCmd)
 }
