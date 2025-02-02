@@ -9,6 +9,7 @@ import (
 	"os"
 
 	Client "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/email/clients"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/util"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -35,6 +36,7 @@ type EmailAuth struct {
 func NewEmailService(
 	logger *slog.Logger,
 ) *EmailService {
+
 	return &EmailService{
 		Env:    os.Getenv("APP_ENV"),
 		Logger: logger,
@@ -79,6 +81,7 @@ func (s *EmailService) Send(
 	}
 
 	// Log
+	s.log(to, subject)
 
 	return nil
 }
@@ -107,6 +110,16 @@ func (s *EmailService) localSend(to []string, subject string, htmlBody string) e
 	return nil
 }
 
-func (s *EmailService) log(to []string, subject string, htmlBody string) {
-	s.Logger.Info("Email sent", "to", to, "subject", subject, "body", htmlBody)
+func (s *EmailService) log(to []string, subject string) {
+	context := map[string]interface{}{
+		"email":   to[0],
+		"subject": subject,
+	}
+
+	util.LogWithContext(
+		s.Logger,
+		slog.LevelInfo,
+		"email sent",
+		context,
+		nil)
 }

@@ -1,4 +1,4 @@
-package push
+package push_client
 
 import (
 	"fmt"
@@ -12,19 +12,17 @@ type APN struct {
 	Client *apns2.Client
 }
 
-func NewAPN() *APN {
+func NewAPN() (*APN, error) {
 	cert, err := certificate.FromP12File("../cert.p12", "")
 	if err != nil {
 		log.Fatal("Cert Error:", err)
 	}
 	client := apns2.NewClient(cert).Production()
 
-	return &APN{
-		Client: client,
-	}
+	return &APN{Client: client}, nil
 }
 
-func (a *APN) SendNotification(notification *apns2.Notification) error {
+func (a *APN) Push(notification *apns2.Notification) error {
 	res, err := a.Client.Push(notification)
 
 	if err != nil {
@@ -35,6 +33,6 @@ func (a *APN) SendNotification(notification *apns2.Notification) error {
 	return nil
 }
 
-func (a *APN) SendNotifications(notifications []*apns2.Notification) error {
+func (a *APN) PushMultiple(notifications []*apns2.Notification) error {
 	return nil
 }

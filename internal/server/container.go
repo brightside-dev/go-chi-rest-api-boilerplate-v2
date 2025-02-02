@@ -62,6 +62,10 @@ func NewContainer(db database.Service) *Container {
 
 	// Services
 	emailService := email.NewEmailService(logger)
+	// pushService, err := push.NewPushService(logger)
+	// if err != nil {
+	// 	logger.Error("Failed to create push service")
+	// }
 
 	// Handlers
 	userHandler := handler.NewUserHandler(userRepo, logger)
