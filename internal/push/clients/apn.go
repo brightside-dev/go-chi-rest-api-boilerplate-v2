@@ -2,10 +2,12 @@ package push_client
 
 import (
 	"fmt"
-	"log"
+	"os"
 
 	"github.com/sideshow/apns2"
 	"github.com/sideshow/apns2/certificate"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 type APN struct {
@@ -13,26 +15,38 @@ type APN struct {
 }
 
 func NewAPN() (*APN, error) {
-	cert, err := certificate.FromP12File("../cert.p12", "")
+	// Load APN certificate
+	cert, err := certificate.FromP12File(os.Getenv("APN_CERT_PATH"), "APN_CERT_PASSWORD")
 	if err != nil {
-		log.Fatal("Cert Error:", err)
+		return nil, fmt.Errorf("failed to load APN certificate: %w", err)
 	}
-	client := apns2.NewClient(cert).Production()
+
+	// Create APN client
+	client := apns2.NewClient(cert)
+	if os.Getenv("APP_ENV") == "production" {
+		client = client.Production()
+	} else {
+		client = client.Development()
+	}
 
 	return &APN{Client: client}, nil
 }
 
 func (a *APN) Push(notification *apns2.Notification) error {
 	res, err := a.Client.Push(notification)
-
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("%v %v %v\n", res.StatusCode, res.ApnsID, res.Reason)
+	fmt.Printf("APN Push Success: %v %v %v\n", res.StatusCode, res.ApnsID, res.Reason)
 	return nil
 }
 
 func (a *APN) PushMultiple(notifications []*apns2.Notification) error {
+	for _, notification := range notifications {
+		if err := a.Push(notification); err != nil {
+			return err
+		}
+	}
 	return nil
 }

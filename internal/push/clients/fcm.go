@@ -3,6 +3,7 @@ package push_client
 import (
 	"context"
 	"fmt"
+	"os"
 
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/messaging"
@@ -15,7 +16,13 @@ type FCM struct {
 
 func NewFCM() (*FCM, error) {
 	// Initialize Firebase App
-	opt := option.WithCredentialsFile("../serviceAccountKey.json")
+	var opt option.ClientOption
+	if os.Getenv("APP_ENV") == "production" {
+		opt = option.WithCredentialsFile("../serviceAccountKeyProd.json")
+	} else {
+		opt = option.WithCredentialsFile("../serviceAccountKeyTest.json")
+	}
+
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize Firebase app: %w", err)
