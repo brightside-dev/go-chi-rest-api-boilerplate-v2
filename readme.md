@@ -15,9 +15,8 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 5. Test web server: `curl localhost:8080/api/health` or `curl localhost:8080/api/ping`
 
 ### 🏗️ TODO
-1. Use Firebase messaging for both iOS and Android push notifications
-2. Implement tests
-3. Implement CI/CD using Github Actions
+1. Implement tests
+2. Fix CI/CD Github Actions
 
 ### 🧰 Project Tools & Packages
 * MySQL driver: https://github.com/go-sql-driver/mysql

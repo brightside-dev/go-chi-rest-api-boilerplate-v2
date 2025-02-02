@@ -44,29 +44,6 @@ jobs:
     runs-on: ubuntu-latest
     if: success()  # Only deploy if the build is successful
 
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets['AWS_ACCESS_KEY_ID_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets['AWS_SECRET_ACCESS_KEY_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      PORT: ${{ secrets['PORT_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      APP_ENV: ${{ secrets['APP_ENV_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      BLUEPRINT_DB_HOST: ${{ secrets['BLUEPRINT_DB_HOST_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      BLUEPRINT_DB_PORT: ${{ secrets['BLUEPRINT_DB_PORT_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      BLUEPRINT_DB_DATABASE: ${{ secrets['BLUEPRINT_DB_DATABASE_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      BLUEPRINT_DB_USERNAME: ${{ secrets['BLUEPRINT_DB_USERNAME_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      BLUEPRINT_DB_PASSWORD: ${{ secrets['BLUEPRINT_DB_PASSWORD_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      GOOSE_DRIVER: ${{ secrets['GOOSE_DRIVER_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      GOOSE_DBSTRING: ${{ secrets['GOOSE_DBSTRING_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      GOOSE_MIGRATION_DIR: ${{ secrets['GOOSE_MIGRATION_DIR_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      FROM_EMAIL: ${{ secrets['FROM_EMAIL_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      FROM_EMAIL_PASSWORD: ${{ secrets['FROM_EMAIL_PASSWORD_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      FROM_EMAIL_SMTP: ${{ secrets['FROM_EMAIL_SMTP_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      EMAIL_SMTP_ADDRESS: ${{ secrets['EMAIL_SMTP_ADDRESS_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      JWT_SECRET: ${{ secrets['JWT_SECRET_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      MAILGUN_API_KEY: ${{ secrets['MAILGUN_API_KEY_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      MAILGUN_DOMAIN: ${{ secrets['MAILGUN_DOMAIN_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'UAT')] }}
-      FIREBASE_SERVICE_ACCOUNT_KEY_PROD: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_PROD }}
-      FIREBASE_SERVICE_ACCOUNT_KEY_UAT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_UAT }}
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -76,6 +53,16 @@ jobs:
       with:
         go-version: '1.23'
 
+    - name: Set AWS environment variables
+      run: |
+        if [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_PROD }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}" >> $GITHUB_ENV
+        else
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_UAT }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_UAT }}" >> $GITHUB_ENV
+        fi
+        
     - name: Set up AWS CLI
       uses: aws-actions/configure-aws-credentials@v1
       with:
