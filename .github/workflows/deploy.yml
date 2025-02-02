@@ -1,0 +1,122 @@
+name: Go CI/CD Workflow
+
+on:
+  push:
+    branches:
+      - master  # Trigger on push to the main branch
+      - test    # Trigger on push to the test branch
+  pull_request:
+    branches:
+      - master  # Trigger on pull requests targeting the main branch
+      - test
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: '1.23'  # Set your Go version
+
+    - name: Cache Go modules
+      uses: actions/cache@v2
+      with:
+        path: /tmp/go-cache
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Install dependencies
+      run: go mod tidy
+
+    - name: Run tests
+      run: go test ./...
+
+    - name: Build the app
+      run: go build -o main
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: success()  # Only deploy if the build is successful
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: '1.23'
+
+    - name: Set up AWS CLI
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets['AWS_ACCESS_KEY_ID_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}
+        aws-secret-access-key: ${{ secrets['AWS_SECRET_ACCESS_KEY_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    # Upload binary to EC2
+    - name: Upload binary to EC2
+      run: |
+        scp -o StrictHostKeyChecking=no main ec2-user@your-ec2-public-ip:/home/ec2-user/
+        ssh -o StrictHostKeyChecking=no ec2-user@your-ec2-public-ip << 'EOF'
+          cd /home/ec2-user/
+          
+          # Ensure .env file exists
+          touch .env
+
+          # Create .env file from GitHub Secrets (test or prod based on branch)
+          echo "PORT=${{ secrets['PORT_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" > .env
+          echo "APP_ENV=${{ secrets['APP_ENV_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "BLUEPRINT_DB_HOST=${{ secrets['BLUEPRINT_DB_HOST_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "BLUEPRINT_DB_PORT=${{ secrets['BLUEPRINT_DB_PORT_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "BLUEPRINT_DB_DATABASE=${{ secrets['BLUEPRINT_DB_DATABASE_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "BLUEPRINT_DB_USERNAME=${{ secrets['BLUEPRINT_DB_USERNAME_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "BLUEPRINT_DB_PASSWORD=${{ secrets['BLUEPRINT_DB_PASSWORD_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "GOOSE_DRIVER=${{ secrets['GOOSE_DRIVER_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "GOOSE_DBSTRING=${{ secrets['GOOSE_DBSTRING_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "GOOSE_MIGRATION_DIR=${{ secrets['GOOSE_MIGRATION_DIR_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "FROM_EMAIL=${{ secrets['FROM_EMAIL_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "FROM_EMAIL_PASSWORD=${{ secrets['FROM_EMAIL_PASSWORD_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "FROM_EMAIL_SMTP=${{ secrets['FROM_EMAIL_SMTP_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "EMAIL_SMTP_ADDRESS=${{ secrets['EMAIL_SMTP_ADDRESS_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "JWT_SECRET=${{ secrets['JWT_SECRET_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "MAILGUN_API_KEY=${{ secrets['MAILGUN_API_KEY_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "MAILGUN_DOMAIN=${{ secrets['MAILGUN_DOMAIN_' + (github.ref == 'refs/heads/master' ? 'PROD' : 'TEST')] }}" >> .env
+          echo "FIREBASE_SERVICE_ACCOUNT_KEY_PROD=${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_PROD }}" >> .env
+          echo "FIREBASE_SERVICE_ACCOUNT_KEY_TEST=${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_TEST }}" >> .env
+          
+          chmod +x main
+
+          # Install Go (if not already installed)
+          if ! command -v go &> /dev/null
+          then
+            echo "Go not found, installing Go..."
+            wget https://golang.org/dl/go1.20.linux-amd64.tar.gz
+            tar -C /usr/local -xvzf go1.20.linux-amd64.tar.gz
+            export PATH=$PATH:/usr/local/go/bin  # Add Go to PATH
+          fi
+
+          # Install Goose if not already installed
+          if ! command -v goose &> /dev/null
+          then
+            echo "Goose not found, installing Goose..."
+            go get github.com/pressly/goose@v3.1.0
+            export PATH=$PATH:$HOME/go/bin  # Add Goose (GOPATH bin) to PATH
+          fi
+
+          # Run migrations
+          echo "Running migrations..."
+          goose up
+
+          # Run the main app in the background
+          nohup ./main &
+
+          # Optionally, run the command module in the background as well (only run this once when needed)
+          # nohup go run ./cmd/command test_email &
+        EOF
