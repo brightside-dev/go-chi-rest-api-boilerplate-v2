@@ -60,23 +60,16 @@ func NewContainer(db database.Service) *Container {
 	// DB Logger
 	logger := NewLogger(db.GetDB())
 
+	// Services
+	emailService := email.NewEmailService(logger)
+
 	// Handlers
 	userHandler := handler.NewUserHandler(userRepo, logger)
-	authHandler := handler.NewAuthHandler(userRepo, refreshTokenRepo)
+	authHandler := handler.NewAuthHandler(emailService, userRepo, refreshTokenRepo, logger)
 	testAPIHandler := handler.NewTestAPIHandler()
 	authAdminHandler := handler.NewAuthAdminHandler(adminUserRepo, *sessionManager)
 	adminUserHandler := handler.NewAdminUserHandler(adminUserRepo)
 	webHandler := handler.NewWebHandler(*sessionManager)
-
-	// Services
-	emailService := email.NewEmailService(
-		env,
-		logger,
-		os.Getenv("FROM_EMAIL"),
-		os.Getenv("FROM_EMAIL_PASSWORD"),
-		os.Getenv("FROM_EMAIL_SMTP"),
-		os.Getenv("EMAIL_SMTP_ADDRESS"),
-	)
 
 	return &Container{
 		// System

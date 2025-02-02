@@ -30,7 +30,7 @@ func (h *UserHandler) GetUsers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		users, err := h.UserRepository.GetAllUsers(r.Context())
 		if err != nil {
-			util.LogHTTPRequestError(h.dbLogger, "failed to get users", r)
+			util.LogWithContext(h.dbLogger, slog.LevelError, "failed to get users", nil, r)
 
 			APIResponse.ErrorResponse(w, r, err, http.StatusInternalServerError)
 			return
@@ -63,27 +63,27 @@ func (h *UserHandler) GetUser() http.HandlerFunc {
 		// Validate "id" query parameter
 		idParam := chi.URLParam(r, "id")
 		if idParam == "" {
-			util.LogHTTPRequestError(h.dbLogger, "missing id paramter", r)
+			util.LogWithContext(h.dbLogger, slog.LevelError, "missing id paramter", nil, r)
 			APIResponse.ErrorResponse(w, r, fmt.Errorf("missing 'id' parameter"), http.StatusBadRequest)
 			return
 		}
 
 		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			util.LogHTTPRequestError(h.dbLogger, "id parameter is not an int", r)
+			util.LogWithContext(h.dbLogger, slog.LevelError, "id parameter is not an int", nil, r)
 			APIResponse.ErrorResponse(w, r, fmt.Errorf("id must be a valid integer"), http.StatusBadRequest)
 			return
 		}
 
 		user, err := h.UserRepository.GetUserByID(r.Context(), id)
 		if err != nil {
-			util.LogHTTPRequestError(h.dbLogger, "failed to get user", r)
+			util.LogWithContext(h.dbLogger, slog.LevelError, "failed to get user", nil, r)
 			APIResponse.ErrorResponse(w, r, err, http.StatusInternalServerError)
 			return
 		}
 
 		if user == nil {
-			util.LogHTTPRequestError(h.dbLogger, "failed to get user", r)
+			util.LogWithContext(h.dbLogger, slog.LevelError, "failed to get user", nil, r)
 			APIResponse.ErrorResponse(w, r, err, http.StatusNotFound)
 			return
 		}

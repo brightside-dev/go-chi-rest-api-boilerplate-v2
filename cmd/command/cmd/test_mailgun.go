@@ -19,7 +19,7 @@ var testMailgunCmd = &cobra.Command{
 			"name": "John Doe",
 		}
 
-		err := container.EmailService.SendEmail("test_email", "This is from command", []string{"battousai.dev@proton.me"}, *data)
+		err := container.EmailService.Send("test_email", "This is from command", []string{"battousai.dev@proton.me"}, *data)
 		if err != nil {
 			fmt.Println(err)
 		}

@@ -3,32 +3,41 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/email"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/dto"
 	customError "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/error"
 	APIResponse "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/response"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/model"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/repository"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/util"
 	"github.com/go-chi/jwtauth/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthHandler struct {
+	EmailService           *email.EmailService
 	UserRepository         repository.UserRepository
 	RefreshTokenRepository repository.UserRefreshTokenRepository
+	dbLogger               *slog.Logger
 }
 
 func NewAuthHandler(
+	emailService *email.EmailService,
 	userRepo repository.UserRepository,
 	refreshTokenRepo repository.UserRefreshTokenRepository,
+	dbLogger *slog.Logger,
 ) *AuthHandler {
 	return &AuthHandler{
+		EmailService:           emailService,
 		UserRepository:         userRepo,
 		RefreshTokenRepository: refreshTokenRepo,
+		dbLogger:               dbLogger,
 	}
 }
 
@@ -164,6 +173,20 @@ func (h *AuthHandler) Register() http.HandlerFunc {
 			ID:      newUser.ID,
 			Name:    fmt.Sprintf("%s.%s", strings.ToUpper(string(newUser.FirstName[0])), newUser.LastName),
 			Country: newUser.Country,
+		}
+
+		// Send Email
+		err = h.EmailService.Send("welcome_email", "Welcome", []string{newUser.Email}, nil)
+		if err != nil {
+			util.LogWithContext(
+				h.dbLogger,
+				slog.LevelError,
+				"failed to send email to user",
+				map[string]interface{}{
+					"userId": newUser.ID,
+					"email":  newUser.Email,
+				},
+				nil)
 		}
 
 		APIResponse.SuccessResponse(w, r, &responseDTO, http.StatusCreated)

@@ -58,18 +58,31 @@ func MapToSlogAttrs(context map[string]interface{}) []slog.Attr {
 	return attrs
 }
 
-func LogHTTPRequestError(logger *slog.Logger, msg string, r *http.Request) {
-	additionalContext := GetHTTPRequestContext(r)
+func LogWithContext(
+	logger *slog.Logger,
+	level slog.Level,
+	msg string,
+	additionalContext map[string]interface{},
+	r *http.Request,
+) {
+	if r != nil {
+		additionalContext = GetHTTPRequestContext(r)
+	}
+
 	// Convert the map to slog.Attr slice
 	attrs := MapToSlogAttrs(additionalContext)
 
-	// Create a slice to hold the arguments to pass to the Error method
+	// Create a slice to hold the arguments to pass to the logger
 	var anyAttrs []interface{}
 	for _, attr := range attrs {
-		// Extract the key and value from each slog.Attr and append it as an any value
 		anyAttrs = append(anyAttrs, attr.Key, attr.Value)
 	}
 
-	// Log the error with the additional context as individual arguments
-	logger.Error(msg, anyAttrs...)
+	// Log the message based on the specified level
+	switch level {
+	case slog.LevelError:
+		logger.Error(msg, anyAttrs...)
+	default:
+		logger.Info(msg, anyAttrs...)
+	}
 }
