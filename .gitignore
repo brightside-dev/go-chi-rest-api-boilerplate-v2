@@ -39,3 +39,6 @@ tailwindcss
 
 # Node modules
 node_modules
+
+# Config
+config/firebase/*

@@ -18,10 +18,12 @@ func NewFCM() (*FCM, error) {
 	// Initialize Firebase App
 	var opt option.ClientOption
 	if os.Getenv("APP_ENV") == "production" {
-		opt = option.WithCredentialsFile("../serviceAccountKeyProd.json")
+		opt = option.WithCredentialsFile(os.Getenv("FIREBASE_SERVICE_ACCOUNT_KEY_PROD"))
 	} else {
-		opt = option.WithCredentialsFile("../serviceAccountKeyTest.json")
+		opt = option.WithCredentialsFile(os.Getenv("FIREBASE_SERVICE_ACCOUNT_KEY_TEST"))
 	}
+
+	fmt.Println("Firebase service account key path: ", opt)
 
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
