@@ -54,6 +54,9 @@ func (m *MockRefreshTokenRepository) Create(ctx context.Context, token *model.Us
 
 func (m *MockRefreshTokenRepository) GetByToken(ctx context.Context, token string) (*model.UserRefreshToken, error) {
 	args := m.Called(ctx, token)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	return args.Get(0).(*model.UserRefreshToken), args.Error(1)
 }
 
@@ -92,9 +95,11 @@ func TestAuthService_Login(t *testing.T) {
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
 	mockUserRepo.On("GetUserByEmail", mock.Anything, "test@example.com").Return(&model.User{
-		ID:       1,
-		Email:    "test@example.com",
-		Password: string(hashedPassword),
+		ID:        1,
+		FirstName: "John",
+		LastName:  "Doe",
+		Email:     "test@example.com",
+		Password:  string(hashedPassword),
 	}, nil)
 
 	mockRefreshTokenRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
@@ -117,12 +122,12 @@ func TestAuthService_Register(t *testing.T) {
 	authService := NewAuthService(db, logger, mockEmailService, mockUserRepo, mockRefreshTokenRepo)
 
 	reqBody, _ := json.Marshal(map[string]string{
-		"firstName": "John",
-		"lastName":  "Doe",
-		"email":     "test@example.com",
-		"password":  "password",
-		"country":   "Australia",
-		"birthday":  "1990-01-01",
+		"first_name": "John",
+		"last_name":  "Doe",
+		"email":      "test@example.com",
+		"password":   "password",
+		"country":    "Australia",
+		"birthday":   "1990-01-01",
 	})
 	req, err := http.NewRequest("POST", "/register", bytes.NewBuffer(reqBody))
 	assert.NoError(t, err)
@@ -130,16 +135,18 @@ func TestAuthService_Register(t *testing.T) {
 	rr := httptest.NewRecorder()
 
 	mockUserRepo.On("CreateUser", mock.Anything, mock.Anything).Return(&model.User{
-		ID:       1,
-		Email:    "test@example.com",
-		Password: "hashedpassword",
+		ID:        1,
+		FirstName: "John",
+		LastName:  "Doe",
+		Email:     "test@example.com",
+		Password:  "hashedpassword",
 	}, nil)
 
-	mockEmailService.On("Send", "welcome_email", "Welcome", []string{"test@example.com"}, nil).Return(nil)
+	mockEmailService.On("Send", "welcome_email", "Welcome", []string{"test@example.com"}, map[string]string(nil)).Return(nil)
 
 	userResponse, err := authService.Register(rr, req)
 	assert.NoError(t, err)
-	assert.Equal(t, "John.Doe", userResponse.Name)
+	assert.Equal(t, "J.Doe", userResponse.Name)
 	mockUserRepo.AssertExpectations(t)
 	mockEmailService.AssertExpectations(t)
 }
@@ -154,7 +161,7 @@ func TestAuthService_Logout(t *testing.T) {
 	authService := NewAuthService(db, logger, mockEmailService, mockUserRepo, mockRefreshTokenRepo)
 
 	reqBody, _ := json.Marshal(map[string]string{
-		"refreshToken": "test-refresh-token",
+		"refresh_token": "test-refresh-token",
 	})
 	req, err := http.NewRequest("POST", "/logout", bytes.NewBuffer(reqBody))
 	assert.NoError(t, err)
@@ -182,7 +189,7 @@ func TestAuthService_RefreshToken(t *testing.T) {
 	authService := NewAuthService(db, logger, mockEmailService, mockUserRepo, mockRefreshTokenRepo)
 
 	reqBody, _ := json.Marshal(map[string]string{
-		"refreshToken": "test-refresh-token",
+		"refresh_token": "test-refresh-token",
 	})
 	req, err := http.NewRequest("POST", "/refresh-token", bytes.NewBuffer(reqBody))
 	assert.NoError(t, err)
@@ -190,6 +197,11 @@ func TestAuthService_RefreshToken(t *testing.T) {
 	rr := httptest.NewRecorder()
 
 	mockRefreshTokenRepo.On("GetByToken", mock.Anything, "test-refresh-token").Return(&model.UserRefreshToken{
+		ID:        1,
+		UserID:    1,
+		CreatedAt: time.Now().Local().String(),
+		UserAgent: "test-user-agent",
+		IPAddress: "1.1.1.1",
 		Token:     "test-refresh-token",
 		ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
 	}, nil)

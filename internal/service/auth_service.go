@@ -84,8 +84,7 @@ func (s *AuthService) Login(w http.ResponseWriter, r *http.Request) (dto.UserLog
 		"exp": time.Now().Add(15 * time.Minute).Unix(), // Access token valid for 15 minutes
 	})
 	if err != nil {
-		// TODO log to DB
-		//dbError := customError.NewSystemError(err)
+
 		return userLoginResponse, customError.ErrInternalServerError
 	}
 
@@ -107,7 +106,10 @@ func (s *AuthService) Login(w http.ResponseWriter, r *http.Request) (dto.UserLog
 		ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
 	}
 
-	s.RefreshTokenRepository.Create(r.Context(), &refreshToken)
+	err = s.RefreshTokenRepository.Create(r.Context(), &refreshToken)
+	if err != nil {
+		return userLoginResponse, customError.ErrInternalServerError
+	}
 
 	userResponseDTO := dto.UserResponse{
 		ID:      user.ID,
