@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"log/slog"
 	"net/http"
 
 	APIResponse "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/response"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/service"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/service/email"
+	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/util"
 )
 
 type AuthHandler struct {
@@ -27,6 +29,7 @@ func (h *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userLoginResponseDTO, err := h.AuthService.Login(w, r)
 		if err != nil {
+			util.LogWithContext(h.EmailService.Logger, slog.LevelError, err.Error(), nil, r)
 			APIResponse.ErrorResponse(w, r, err, http.StatusUnauthorized)
 			return
 		}
@@ -42,6 +45,7 @@ func (h *AuthHandler) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userResponseDTO, err := h.AuthService.Register(w, r)
 		if err != nil {
+			util.LogWithContext(h.EmailService.Logger, slog.LevelError, err.Error(), nil, r)
 			APIResponse.ErrorResponse(w, r, err, http.StatusBadRequest)
 			return
 		}
@@ -52,7 +56,12 @@ func (h *AuthHandler) Register() http.HandlerFunc {
 
 func (h *AuthHandler) Logout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Logout logic
+		err := h.AuthService.Logout(w, r)
+		if err != nil {
+			util.LogWithContext(h.EmailService.Logger, slog.LevelError, err.Error(), nil, r)
+			APIResponse.ErrorResponse(w, r, err, http.StatusInternalServerError)
+			return
+		}
 		APIResponse.SuccessResponse(w, r, nil)
 	}
 }
@@ -61,6 +70,7 @@ func (h *AuthHandler) RefreshToken() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userRefreshTokenRepsonseDTO, err := h.AuthService.RefreshToken(w, r)
 		if err != nil {
+			util.LogWithContext(h.EmailService.Logger, slog.LevelError, err.Error(), nil, r)
 			APIResponse.ErrorResponse(w, r, err, http.StatusUnauthorized)
 			return
 		}

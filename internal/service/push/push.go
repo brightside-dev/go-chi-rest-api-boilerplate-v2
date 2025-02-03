@@ -4,7 +4,7 @@ import (
 	"log/slog"
 
 	"firebase.google.com/go/messaging"
-	Client "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/push/clients"
+	Client "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/service/push/clients"
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/util"
 	"github.com/sideshow/apns2"
 )

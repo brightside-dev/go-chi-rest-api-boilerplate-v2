@@ -64,13 +64,14 @@ func NewContainer(db database.Service) *Container {
 	// Services
 	emailService := email.NewEmailService(logger)
 	authService := service.NewAuthService(&db, emailService, userRepo, refreshTokenRepo)
+	userService := service.NewUserService(&db, logger, userRepo)
 	// pushService, err := push.NewPushService(logger)
 	// if err != nil {
 	// 	logger.Error("Failed to create push service")
 	// }
 
 	// Handlers
-	userHandler := handler.NewUserHandler(userRepo, logger)
+	userHandler := handler.NewUserHandler(userService, logger)
 	authHandler := handler.NewAuthHandler(emailService, authService)
 	testAPIHandler := handler.NewTestAPIHandler()
 	authAdminHandler := handler.NewAuthAdminHandler(adminUserRepo, *sessionManager)

@@ -27,6 +27,7 @@ type Service interface {
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
 	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 
 	GetDB() *sql.DB
 }
@@ -84,6 +85,11 @@ func (s *service) QueryContext(ctx context.Context, query string, args ...interf
 // QueryRowContext executes a query that is expected to return at most one row.
 func (s *service) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
 	return s.db.QueryRowContext(ctx, query, args...)
+}
+
+// ExecContext executes a query without returning any rows.
+func (s *service) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+	return s.db.ExecContext(ctx, query, args...)
 }
 
 // Health checks the health of the database connection by pinging the database.

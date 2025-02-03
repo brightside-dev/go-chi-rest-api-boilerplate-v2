@@ -126,20 +126,19 @@ func (s *AuthService) Register(w http.ResponseWriter, r *http.Request) (dto.User
 	// Check for missing or empty fields
 	if req.FirstName == "" || req.LastName == "" || req.Email == "" ||
 		req.Password == "" || req.Country == "" || req.Birthday == "" {
-		APIResponse.ErrorResponse(w, r, fmt.Errorf("missing required fields"), http.StatusBadRequest)
-		return userResponseDTO, nil
+		return userResponseDTO, fmt.Errorf("missing required fields")
 	}
 
 	// Parse the Birthday string into time.Time
 	birthday, err := time.Parse("2006-01-02", req.Birthday)
 	if err != nil {
-		return userResponseDTO, customError.ErrInvalidRequestBody
+		return userResponseDTO, err
 	}
 
 	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return userResponseDTO, customError.ErrUnAuthorized
+		return userResponseDTO, err
 	}
 
 	// Create a new user
@@ -155,7 +154,7 @@ func (s *AuthService) Register(w http.ResponseWriter, r *http.Request) (dto.User
 	// Save user to database
 	newUser, err := s.UserRepository.CreateUser(r.Context(), &user)
 	if err != nil {
-		return userResponseDTO, customError.ErrInternalServerError
+		return userResponseDTO, err
 	}
 
 	// Send Email
@@ -179,9 +178,31 @@ func (s *AuthService) Register(w http.ResponseWriter, r *http.Request) (dto.User
 	return userResponseDTO, nil
 }
 
-func (s *AuthService) Logout(w http.ResponseWriter, r *http.Request) {
-	// Logout logic
-	APIResponse.SuccessResponse(w, r, nil)
+func (s *AuthService) Logout(w http.ResponseWriter, r *http.Request) error {
+	req := dto.UserRefreshTokenRequest{}
+
+	// Decode request body to get the refresh token
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return err
+	}
+
+	// Validate refresh token
+	refreshToken, err := s.RefreshTokenRepository.GetByToken(r.Context(), req.RefreshToken)
+	if err != nil || refreshToken == nil {
+		return customError.ErrUnAuthorized
+	}
+
+	// Delete the refresh token from the database
+	err = s.RefreshTokenRepository.DeleteByToken(r.Context(), req.RefreshToken)
+	if err != nil {
+		return err
+	}
+
+	// Return a success response
+	APIResponse.SuccessResponse(w, r, map[string]string{"message": "Successfully logged out"})
+
+	return nil
 }
 
 func (s *AuthService) RefreshToken(w http.ResponseWriter, r *http.Request) (dto.UserRefreshTokenResponse, error) {
@@ -191,21 +212,21 @@ func (s *AuthService) RefreshToken(w http.ResponseWriter, r *http.Request) (dto.
 
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		return userRefreshTokenResponseDTO, customError.ErrInvalidRequestBody
+		return userRefreshTokenResponseDTO, err
 	}
 
 	// Get the refresh token from the database
 	refreshToken, err := s.RefreshTokenRepository.GetByToken(r.Context(), req.RefreshToken)
 	if err != nil {
-		return userRefreshTokenResponseDTO, customError.ErrInternalServerError
+		return userRefreshTokenResponseDTO, err
 	}
 
 	if refreshToken == nil {
-		return userRefreshTokenResponseDTO, customError.ErrUnAuthorized
+		return userRefreshTokenResponseDTO, err
 	}
 
 	if refreshToken.ExpiresAt.Unix() < time.Now().Unix() {
-		return userRefreshTokenResponseDTO, customError.ErrUnAuthorized
+		return userRefreshTokenResponseDTO, err
 	}
 
 	// Generate the access token (short-lived)
@@ -216,7 +237,7 @@ func (s *AuthService) RefreshToken(w http.ResponseWriter, r *http.Request) (dto.
 		"exp": time.Now().Add(15 * time.Minute).Unix(), // Access token valid for 15 minutes
 	})
 	if err != nil {
-		return userRefreshTokenResponseDTO, customError.ErrInternalServerError
+		return userRefreshTokenResponseDTO, err
 	}
 
 	userRefreshTokenResponseDTO.AccessToken = accessTokenString

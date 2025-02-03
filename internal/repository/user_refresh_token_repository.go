@@ -12,6 +12,7 @@ import (
 type UserRefreshTokenRepository interface {
 	Create(ctx context.Context, refreshToken *model.UserRefreshToken) error
 	GetByToken(ctx context.Context, token string) (*model.UserRefreshToken, error)
+	DeleteByToken(ctx context.Context, token string) error
 }
 
 type userRefreshTokenRepository struct {
@@ -88,4 +89,13 @@ func (r *userRefreshTokenRepository) GetByToken(ctx context.Context, token strin
 	fmt.Printf("Refresh Token: %+v\n", refreshToken)
 
 	return &refreshToken, nil
+}
+
+func (r *userRefreshTokenRepository) DeleteByToken(ctx context.Context, token string) error {
+	_, err := r.db.ExecContext(ctx, "DELETE FROM refresh_tokens WHERE token = ?", token)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -42,3 +42,7 @@ node_modules
 
 # Config
 config/firebase/*
+
+#tmp
+ui/assets/img/email/
+internal/service/email/templates/afl*

@@ -57,7 +57,7 @@ func (s *EmailService) Send(
 	data map[string]string) error {
 
 	// Parse and render the HTML template
-	tmpl, err := template.ParseFiles("internal/email/templates/" + templateName + ".html")
+	tmpl, err := template.ParseFiles("internal/service/email/templates/" + templateName + ".html")
 	if err != nil {
 		return fmt.Errorf("failed to parse template: %w", err)
 	}
