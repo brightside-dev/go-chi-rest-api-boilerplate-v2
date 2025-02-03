@@ -11,13 +11,13 @@ import (
 
 type UserHandler struct {
 	dbLogger    *slog.Logger
-	UserService *service.UserService
+	UserService service.UserService
 }
 
 func NewUserHandler(userService *service.UserService, dbLogger *slog.Logger) *UserHandler {
 	return &UserHandler{
 		dbLogger:    dbLogger,
-		UserService: userService,
+		UserService: *userService,
 	}
 }
 

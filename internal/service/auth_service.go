@@ -23,15 +23,24 @@ import (
 
 type AuthService struct {
 	db                     *database.Service
-	EmailService           *email.EmailService
-	UserRepository         repository.UserRepository
+	dbLogger               *slog.Logger
+	EmailService           email.EmailServiceInterface
+	UserRepository         repository.UserRepositoryInterface
 	RefreshTokenRepository repository.UserRefreshTokenRepository
+}
+
+type AuthServiceInterface interface {
+	Login(w http.ResponseWriter, r *http.Request) (dto.UserLoginResponse, error)
+	Register(w http.ResponseWriter, r *http.Request) (dto.UserResponse, error)
+	Logout(w http.ResponseWriter, r *http.Request) error
+	RefreshToken(w http.ResponseWriter, r *http.Request) (dto.UserRefreshTokenResponse, error)
 }
 
 func NewAuthService(
 	db *database.Service,
-	emailService *email.EmailService,
-	userRepository repository.UserRepository,
+	dbLogger *slog.Logger,
+	emailService email.EmailServiceInterface,
+	userRepository repository.UserRepositoryInterface,
 	refreshTokenRepository repository.UserRefreshTokenRepository,
 ) *AuthService {
 	return &AuthService{
@@ -161,7 +170,7 @@ func (s *AuthService) Register(w http.ResponseWriter, r *http.Request) (dto.User
 	err = s.EmailService.Send("welcome_email", "Welcome", []string{newUser.Email}, nil)
 	if err != nil {
 		util.LogWithContext(
-			s.EmailService.Logger,
+			s.dbLogger,
 			slog.LevelError,
 			"failed to send email to user",
 			map[string]interface{}{

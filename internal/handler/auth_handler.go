@@ -12,12 +12,12 @@ import (
 
 type AuthHandler struct {
 	EmailService *email.EmailService
-	AuthService  *service.AuthService
+	AuthService  service.AuthServiceInterface
 }
 
 func NewAuthHandler(
 	emailService *email.EmailService,
-	authService *service.AuthService,
+	authService service.AuthServiceInterface,
 ) *AuthHandler {
 	return &AuthHandler{
 		EmailService: emailService,

@@ -10,22 +10,22 @@ import (
 	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/util"
 )
 
-type UserRepository interface {
+type UserRepositoryInterface interface {
 	GetAllUsers(ctx context.Context) ([]model.User, error)
 	GetUserByID(ctx context.Context, id int) (*model.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
 	CreateUser(ctx context.Context, user *model.User) (*model.User, error)
 }
 
-type userRepository struct {
+type UserRepository struct {
 	db database.Service
 }
 
-func NewUserRepository(db database.Service) UserRepository {
-	return &userRepository{db: db}
+func NewUserRepository(db database.Service) UserRepositoryInterface {
+	return &UserRepository{db: db}
 }
 
-func (r *userRepository) GetAllUsers(ctx context.Context) ([]model.User, error) {
+func (r *UserRepository) GetAllUsers(ctx context.Context) ([]model.User, error) {
 	rows, err := r.db.QueryContext(ctx, "SELECT * FROM users")
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (r *userRepository) GetAllUsers(ctx context.Context) ([]model.User, error) 
 	return users, nil
 }
 
-func (r *userRepository) GetUserByID(ctx context.Context, id int) (*model.User, error) {
+func (r *UserRepository) GetUserByID(ctx context.Context, id int) (*model.User, error) {
 	row := r.db.QueryRowContext(ctx, "SELECT * FROM users WHERE id = ?", id)
 
 	var user model.User
@@ -100,7 +100,7 @@ func (r *userRepository) GetUserByID(ctx context.Context, id int) (*model.User, 
 	return &user, nil
 }
 
-func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
+func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	row := r.db.QueryRowContext(ctx, "SELECT * FROM users WHERE email = ?", email)
 
 	var user model.User
@@ -136,7 +136,7 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 	return &user, nil
 }
 
-func (r *userRepository) CreateUser(ctx context.Context, user *model.User) (*model.User, error) {
+func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) (*model.User, error) {
 	// Begin a transaction
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {

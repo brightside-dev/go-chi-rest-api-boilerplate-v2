@@ -15,8 +15,9 @@ import (
 )
 
 type EmailServiceInterface interface {
-	Send(to []string, subject string, body string) error
-	smptSend(to []string, subject string, htmlBody string) error
+	Send(templateName string, subject string, to []string, data map[string]string) error
+	// localSend(to []string, subject string, htmlBody string) error
+	// log(to []string, subject string)
 }
 
 type EmailService struct {

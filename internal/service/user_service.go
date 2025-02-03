@@ -19,13 +19,13 @@ import (
 type UserService struct {
 	db             *database.Service
 	dbLogger       *slog.Logger
-	UserRepository repository.UserRepository
+	UserRepository repository.UserRepositoryInterface
 }
 
 func NewUserService(
 	db *database.Service,
 	dbLogger *slog.Logger,
-	userRepository repository.UserRepository,
+	userRepository repository.UserRepositoryInterface,
 ) *UserService {
 	return &UserService{
 		db:             db,

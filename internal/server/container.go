@@ -63,7 +63,7 @@ func NewContainer(db database.Service) *Container {
 
 	// Services
 	emailService := email.NewEmailService(logger)
-	authService := service.NewAuthService(&db, emailService, userRepo, refreshTokenRepo)
+	authService := service.NewAuthService(&db, logger, emailService, userRepo, refreshTokenRepo)
 	userService := service.NewUserService(&db, logger, userRepo)
 	// pushService, err := push.NewPushService(logger)
 	// if err != nil {
