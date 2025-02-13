@@ -5,27 +5,27 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/database"
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/model"
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/util"
+	"github.com/brightside-dev/ronin-fitness-be/database/client"
+	"github.com/brightside-dev/ronin-fitness-be/internal/model"
 )
 
-type UserRepositoryInterface interface {
-	GetAllUsers(ctx context.Context) ([]model.User, error)
-	GetUserByID(ctx context.Context, id int) (*model.User, error)
-	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
-	CreateUser(ctx context.Context, user *model.User) (*model.User, error)
+type UserRepository interface {
+	GetAll(ctx context.Context) ([]model.User, error)
+	GetByID(ctx context.Context, id int) (*model.User, error)
+	GetByEmail(ctx context.Context, email string) (*model.User, error)
+	Create(ctx context.Context, tx *sql.Tx, user *model.User) (*model.User, error)
+	Update(ctx context.Context, tx *sql.Tx, user *model.User) error
 }
 
-type UserRepository struct {
-	db database.Service
+type userRepository struct {
+	db client.DatabaseService
 }
 
-func NewUserRepository(db database.Service) UserRepositoryInterface {
-	return &UserRepository{db: db}
+func NewUserRepository(db client.DatabaseService) UserRepository {
+	return &userRepository{db: db}
 }
 
-func (r *UserRepository) GetAllUsers(ctx context.Context) ([]model.User, error) {
+func (r *userRepository) GetAll(ctx context.Context) ([]model.User, error) {
 	rows, err := r.db.QueryContext(ctx, "SELECT * FROM users")
 	if err != nil {
 		return nil, err
@@ -35,49 +35,38 @@ func (r *UserRepository) GetAllUsers(ctx context.Context) ([]model.User, error) 
 	var users []model.User
 	for rows.Next() {
 		var user model.User
-		var birthdayRaw interface{}
 		if err := rows.Scan(
 			&user.ID,
 			&user.FirstName,
 			&user.LastName,
 			&user.Email,
 			&user.Password,
-			&birthdayRaw,
+			&user.Birthday,
 			&user.Country,
 			&user.CreatedAt,
 			&user.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
-		// Convert birthdayRaw to time.Time
-		if birthdayRaw != nil {
-			birthday, err := util.ParseBirthday(birthdayRaw)
-			if err != nil {
-				return nil, err
-			}
 
-			user.Birthday = birthday
-		}
 		users = append(users, user)
 	}
 	return users, nil
 }
 
-func (r *UserRepository) GetUserByID(ctx context.Context, id int) (*model.User, error) {
+func (r *userRepository) GetByID(ctx context.Context, id int) (*model.User, error) {
 	row := r.db.QueryRowContext(ctx, "SELECT * FROM users WHERE id = ?", id)
 
 	var user model.User
-	var birthdayRaw interface{}
-
-	// Scan the row, using birthdayRaw to handle the birthday field temporarily
 	if err := row.Scan(
 		&user.ID,
 		&user.FirstName,
 		&user.LastName,
 		&user.Email,
 		&user.Password,
-		&birthdayRaw,
+		&user.Birthday,
 		&user.Country,
+		&user.IsVerified,
 		&user.CreatedAt,
 		&user.UpdatedAt); err != nil {
 		if err == sql.ErrNoRows {
@@ -86,26 +75,13 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id int) (*model.User, 
 		return nil, fmt.Errorf("user not found: %w", err)
 	}
 
-	fmt.Printf("user: %+v\n", user)
-	// Convert birthdayRaw to time.Time
-	if birthdayRaw != nil {
-		birthday, err := util.ParseBirthday(birthdayRaw)
-		if err != nil {
-			return nil, err
-		}
-
-		user.Birthday = birthday
-	}
-
 	return &user, nil
 }
 
-func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
+func (r *userRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	row := r.db.QueryRowContext(ctx, "SELECT * FROM users WHERE email = ?", email)
 
 	var user model.User
-	var birthdayRaw interface{}
-
 	// Scan the row, using birthdayRaw to handle the birthday field temporarily
 	if err := row.Scan(
 		&user.ID,
@@ -113,7 +89,7 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 		&user.LastName,
 		&user.Email,
 		&user.Password,
-		&birthdayRaw,
+		&user.Birthday,
 		&user.Country,
 		&user.CreatedAt,
 		&user.UpdatedAt); err != nil {
@@ -123,47 +99,21 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 		return nil, fmt.Errorf("user not found: %w", err)
 	}
 
-	// Convert birthdayRaw to time.Time
-	if birthdayRaw != nil {
-		birthday, err := util.ParseBirthday(birthdayRaw)
-		if err != nil {
-			return nil, err
-		}
-
-		user.Birthday = birthday
-	}
-
 	return &user, nil
 }
 
-func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) (*model.User, error) {
-	// Begin a transaction
-	tx, err := r.db.BeginTx(ctx, nil)
-	if err != nil {
-		return &model.User{}, err
-	}
-
-	// Ensure rollback is called if the function exits without committing
-	defer func() {
-		tx.Rollback()
-	}()
-
+func (r *userRepository) Create(ctx context.Context, tx *sql.Tx, user *model.User) (*model.User, error) {
 	result, err := tx.ExecContext(
 		ctx,
 		"INSERT INTO users (first_name, last_name, email, password, country, birthday) VALUES (?, ?, ?, ?, ?, ?)",
 		user.FirstName, user.LastName, user.Email, user.Password, user.Country, user.Birthday)
 	if err != nil {
-		return &model.User{}, err
+		return nil, err
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return &model.User{}, err
-	}
-
-	// Commit the transaction
-	if err := tx.Commit(); err != nil {
-		return &model.User{}, err
+		return nil, err
 	}
 
 	newUser := &model.User{
@@ -177,4 +127,32 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) (*mod
 	}
 
 	return newUser, nil
+}
+
+func (r *userRepository) Update(ctx context.Context, tx *sql.Tx, user *model.User) error {
+
+	fmt.Println("Updating user: ", user)
+	queryUpdate := `
+		UPDATE users u
+		SET 
+			u.first_name = COALESCE(NULLIF(?, ''), u.first_name),
+			u.last_name = COALESCE(NULLIF(?, ''), u.last_name),
+			u.email = COALESCE(NULLIF(?, ''), u.email),
+			u.password = COALESCE(NULLIF(?, ''), u.password),
+			u.country = COALESCE(NULLIF(?, ''), u.country),
+			u.birthday = COALESCE(NULLIF(?, '0000-00-00'), u.birthday),
+			u.is_verified = COALESCE(?, u.is_verified)
+		WHERE u.id = ?
+	`
+
+	_, err := tx.ExecContext(
+		ctx,
+		queryUpdate,
+		user.FirstName, user.LastName, user.Email, user.Password, user.Country, user.Birthday, user.IsVerified, user.ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

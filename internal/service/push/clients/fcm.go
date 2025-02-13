@@ -10,11 +10,16 @@ import (
 	"google.golang.org/api/option"
 )
 
-type FCM struct {
+type FCM interface {
+	Push(message *messaging.Message) error
+	PushMultiple(tokens []string, title string, body string) error
+}
+
+type fcm struct {
 	Client *messaging.Client
 }
 
-func NewFCM() (*FCM, error) {
+func NewFCM() (FCM, error) {
 	// Initialize Firebase App
 	var opt option.ClientOption
 	if os.Getenv("APP_ENV") == "production" {
@@ -36,10 +41,10 @@ func NewFCM() (*FCM, error) {
 		return nil, fmt.Errorf("failed to initialize FCM client: %w", err)
 	}
 
-	return &FCM{Client: client}, nil
+	return &fcm{Client: client}, nil
 }
 
-func (f *FCM) Push(message *messaging.Message) error {
+func (f *fcm) Push(message *messaging.Message) error {
 	// Send notification
 	response, err := f.Client.Send(context.Background(), message)
 	if err != nil {
@@ -50,7 +55,7 @@ func (f *FCM) Push(message *messaging.Message) error {
 	return nil
 }
 
-func (f *FCM) PushMultiple(tokens []string, title string, body string) error {
+func (f *fcm) PushMultiple(tokens []string, title string, body string) error {
 	message := &messaging.MulticastMessage{
 		Tokens: tokens,
 		Notification: &messaging.Notification{

@@ -5,18 +5,25 @@ import (
 	"log/slog"
 )
 
+type MultiHandler interface {
+	Enabled(ctx context.Context, level slog.Level) bool
+	Handle(ctx context.Context, r slog.Record) error
+	WithAttrs(attrs []slog.Attr) slog.Handler
+	WithGroup(name string) slog.Handler
+}
+
 // MultiHandler combines multiple handlers.
-type MultiHandler struct {
+type multiHandler struct {
 	handlers []slog.Handler
 }
 
 // NewMultiHandler creates a new MultiHandler with the provided handlers.
-func NewMultiHandler(handlers ...slog.Handler) *MultiHandler {
-	return &MultiHandler{handlers: handlers}
+func NewMultiHandler(handlers ...slog.Handler) MultiHandler {
+	return &multiHandler{handlers: handlers}
 }
 
 // Handle writes the log to all handlers.
-func (m *MultiHandler) Handle(ctx context.Context, r slog.Record) error {
+func (m *multiHandler) Handle(ctx context.Context, r slog.Record) error {
 	for _, handler := range m.handlers {
 		if err := handler.Handle(ctx, r); err != nil {
 			return err
@@ -26,7 +33,7 @@ func (m *MultiHandler) Handle(ctx context.Context, r slog.Record) error {
 }
 
 // Enabled checks if any handler is enabled for the log level.
-func (m *MultiHandler) Enabled(ctx context.Context, level slog.Level) bool {
+func (m *multiHandler) Enabled(ctx context.Context, level slog.Level) bool {
 	for _, handler := range m.handlers {
 		if handler.Enabled(ctx, level) {
 			return true
@@ -36,19 +43,19 @@ func (m *MultiHandler) Enabled(ctx context.Context, level slog.Level) bool {
 }
 
 // WithAttrs adds attributes to the MultiHandler (for all handlers).
-func (m *MultiHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+func (m *multiHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	var newHandlers []slog.Handler
 	for _, handler := range m.handlers {
 		newHandlers = append(newHandlers, handler.WithAttrs(attrs))
 	}
-	return &MultiHandler{handlers: newHandlers}
+	return &multiHandler{handlers: newHandlers}
 }
 
 // WithGroup adds a group to the MultiHandler (for all handlers).
-func (m *MultiHandler) WithGroup(name string) slog.Handler {
+func (m *multiHandler) WithGroup(name string) slog.Handler {
 	var newHandlers []slog.Handler
 	for _, handler := range m.handlers {
 		newHandlers = append(newHandlers, handler.WithGroup(name))
 	}
-	return &MultiHandler{handlers: newHandlers}
+	return &multiHandler{handlers: newHandlers}
 }

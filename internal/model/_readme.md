@@ -1,1 +1,0 @@
-This defines the database entity models. These models represent the structure of the data as it would be stored in a relational database. 

@@ -4,18 +4,23 @@ import (
 	"log/slog"
 
 	"firebase.google.com/go/messaging"
-	Client "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/service/push/clients"
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/util"
+	Client "github.com/brightside-dev/ronin-fitness-be/internal/service/push/clients"
+	"github.com/brightside-dev/ronin-fitness-be/internal/util"
 	"github.com/sideshow/apns2"
 )
 
-type PushService struct {
-	Logger    *slog.Logger
-	APNClient *Client.APN
-	FCMClient *Client.FCM
+type PushService interface {
+	PushIOS()
+	PushAndroid(token string, title string, body string)
 }
 
-func NewPushService(logger *slog.Logger) (*PushService, error) {
+type pushService struct {
+	Logger    *slog.Logger
+	APNClient Client.APN
+	FCMClient Client.FCM
+}
+
+func NewPushService(logger *slog.Logger) (PushService, error) {
 	apnClient, err := Client.NewAPN()
 	if err != nil {
 		return nil, err
@@ -26,13 +31,14 @@ func NewPushService(logger *slog.Logger) (*PushService, error) {
 		return nil, err
 	}
 
-	return &PushService{
+	return &pushService{
+		Logger:    logger,
 		APNClient: apnClient,
 		FCMClient: fcmClient,
 	}, nil
 }
 
-func (p *PushService) PushIOS() {
+func (p *pushService) PushIOS() {
 	notification := &apns2.Notification{
 		DeviceToken: "device_token",
 		Topic:       "com.example.app",
@@ -58,7 +64,7 @@ func (p *PushService) PushIOS() {
 	}
 }
 
-func (p *PushService) PushAndroid(token string, title string, body string) {
+func (p *pushService) PushAndroid(token string, title string, body string) {
 	message := &messaging.Message{
 		Token: token,
 		Notification: &messaging.Notification{
@@ -86,11 +92,11 @@ func (p *PushService) PushAndroid(token string, title string, body string) {
 	}
 }
 
-func (s *PushService) log(context map[string]interface{}) {
-	util.LogWithContext(
-		s.Logger,
-		slog.LevelInfo,
-		"push notification sent",
-		context,
-		nil)
-}
+// func (s *pushService) log(context map[string]interface{}) {
+// 	util.LogWithContext(
+// 		s.Logger,
+// 		slog.LevelInfo,
+// 		"push notification sent",
+// 		context,
+// 		nil)
+// }

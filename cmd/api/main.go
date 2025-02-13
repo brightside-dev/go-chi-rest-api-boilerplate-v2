@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/server"
+	server "github.com/brightside-dev/ronin-fitness-be/http"
 )
 
 func gracefulShutdown(apiServer *http.Server, done chan bool) {
@@ -38,7 +38,7 @@ func gracefulShutdown(apiServer *http.Server, done chan bool) {
 
 func main() {
 
-	server := server.NewServer()
+	server := server.New()
 
 	// Create a done channel to signal when the shutdown is complete
 	done := make(chan bool, 1)

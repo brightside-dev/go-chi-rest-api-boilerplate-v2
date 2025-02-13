@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/database"
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/model"
+	"github.com/brightside-dev/ronin-fitness-be/database/client"
+	"github.com/brightside-dev/ronin-fitness-be/internal/model"
 )
 
 type AdminUserRepository interface {
@@ -17,10 +17,10 @@ type AdminUserRepository interface {
 }
 
 type adminUserRepository struct {
-	db database.Service
+	db client.DatabaseService
 }
 
-func NewAdminUserRepository(db database.Service) AdminUserRepository {
+func NewAdminUserRepository(db client.DatabaseService) AdminUserRepository {
 	return &adminUserRepository{db: db}
 }
 

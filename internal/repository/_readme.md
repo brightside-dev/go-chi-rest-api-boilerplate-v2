@@ -1,2 +1,0 @@
-This serves as a layer that provides an abstraction for data access and management. It acts as an intermediary between the application’s business logic and the database. 
-The repository encapsulates all the logic for querying, storing, updating, and deleting data. This helps keep the application's core logic cleaner, more modular, and easier to test.

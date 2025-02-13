@@ -7,37 +7,42 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/database"
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/dto"
-	customError "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/error"
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/repository"
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/util"
+	"github.com/brightside-dev/ronin-fitness-be/database/client"
+	"github.com/brightside-dev/ronin-fitness-be/internal/handler/dto"
+	customError "github.com/brightside-dev/ronin-fitness-be/internal/handler/error"
+	"github.com/brightside-dev/ronin-fitness-be/internal/repository"
+	"github.com/brightside-dev/ronin-fitness-be/internal/util"
 
 	"github.com/go-chi/chi/v5"
 )
 
-type UserService struct {
-	db             *database.Service
-	dbLogger       *slog.Logger
-	UserRepository repository.UserRepositoryInterface
+type UserService interface {
+	GetUsers(w http.ResponseWriter, r *http.Request) ([]dto.UserResponse, error)
+	GetUser(w http.ResponseWriter, r *http.Request) (dto.UserResponse, error)
+}
+
+type userService struct {
+	DB             client.DatabaseService
+	DBLogger       *slog.Logger
+	UserRepository repository.UserRepository
 }
 
 func NewUserService(
-	db *database.Service,
-	dbLogger *slog.Logger,
-	userRepository repository.UserRepositoryInterface,
-) *UserService {
-	return &UserService{
-		db:             db,
-		dbLogger:       dbLogger,
+	DB client.DatabaseService,
+	DBLogger *slog.Logger,
+	userRepository repository.UserRepository,
+) UserService {
+	return &userService{
+		DB:             DB,
+		DBLogger:       DBLogger,
 		UserRepository: userRepository,
 	}
 }
 
-func (s *UserService) GetUsers(w http.ResponseWriter, r *http.Request) ([]dto.UserResponse, error) {
+func (s *userService) GetUsers(w http.ResponseWriter, r *http.Request) ([]dto.UserResponse, error) {
 	var usersRepsonseDTO []dto.UserResponse
 
-	users, err := s.UserRepository.GetAllUsers(r.Context())
+	users, err := s.UserRepository.GetAll(r.Context())
 	if err != nil {
 		return usersRepsonseDTO, err
 	}
@@ -53,7 +58,7 @@ func (s *UserService) GetUsers(w http.ResponseWriter, r *http.Request) ([]dto.Us
 
 		// Append to response slice
 		usersRepsonseDTO = append(usersRepsonseDTO, dto.UserResponse{
-			ID:      user.ID,
+			UserID:  user.ID,
 			Name:    formattedName,
 			Country: user.Country,
 		})
@@ -62,7 +67,7 @@ func (s *UserService) GetUsers(w http.ResponseWriter, r *http.Request) ([]dto.Us
 	return usersRepsonseDTO, nil
 }
 
-func (s *UserService) GetUser(w http.ResponseWriter, r *http.Request) (dto.UserResponse, error) {
+func (s *userService) GetUser(w http.ResponseWriter, r *http.Request) (dto.UserResponse, error) {
 	var userResponseDTO dto.UserResponse
 
 	idParam := chi.URLParam(r, "id")
@@ -72,23 +77,23 @@ func (s *UserService) GetUser(w http.ResponseWriter, r *http.Request) (dto.UserR
 
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		util.LogWithContext(s.dbLogger, slog.LevelError, "id parameter is not an int", nil, r)
+		util.LogWithContext(s.DBLogger, slog.LevelError, "id parameter is not an int", nil, r)
 		return userResponseDTO, fmt.Errorf("id must be a valid integer")
 	}
 
-	user, err := s.UserRepository.GetUserByID(r.Context(), id)
+	user, err := s.UserRepository.GetByID(r.Context(), id)
 	if err != nil {
-		util.LogWithContext(s.dbLogger, slog.LevelError, "failed to get user", nil, r)
+		util.LogWithContext(s.DBLogger, slog.LevelError, "failed to get user", nil, r)
 		return userResponseDTO, customError.ErrInternalServerError
 	}
 
 	if user == nil {
-		util.LogWithContext(s.dbLogger, slog.LevelError, "failed to get user", nil, r)
+		util.LogWithContext(s.DBLogger, slog.LevelError, "failed to get user", nil, r)
 		return userResponseDTO, customError.ErrInternalServerError
 	}
 
 	return dto.UserResponse{
-		ID:      user.ID,
+		UserID:  user.ID,
 		Name:    fmt.Sprintf("%s.%s", strings.ToUpper(string(user.FirstName[0])), user.LastName),
 		Country: user.Country,
 	}, nil

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	Client "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/service/push/clients"
+	Client "github.com/brightside-dev/ronin-fitness-be/internal/service/push/clients"
 
 	"firebase.google.com/go/messaging"
 	_ "github.com/joho/godotenv/autoload"

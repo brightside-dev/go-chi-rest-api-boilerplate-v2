@@ -11,27 +11,34 @@ import (
 	"time"
 )
 
+type DBLogHandler interface {
+	Enabled(ctx context.Context, level slog.Level) bool
+	Handle(ctx context.Context, r slog.Record) error
+	WithAttrs(attrs []slog.Attr) slog.Handler
+	WithGroup(name string) slog.Handler
+}
+
 // DBLogHandler logs messages to the database.
-type DBLogHandler struct {
+type dbLogHandler struct {
 	db          *sql.DB
 	minLogLevel slog.Level
 }
 
 // NewDBLogHandler creates a new DBLogHandler.
-func NewDBLogHandler(db *sql.DB, minLogLevel slog.Level) *DBLogHandler {
-	return &DBLogHandler{
+func NewDBLogHandler(db *sql.DB, minLogLevel slog.Level) DBLogHandler {
+	return &dbLogHandler{
 		db:          db,
 		minLogLevel: minLogLevel,
 	}
 }
 
 // Enabled checks if the log level is enabled.
-func (h *DBLogHandler) Enabled(ctx context.Context, level slog.Level) bool {
+func (h *dbLogHandler) Enabled(ctx context.Context, level slog.Level) bool {
 	return level >= h.minLogLevel
 }
 
 // Handle writes the log record to the database.
-func (h *DBLogHandler) Handle(ctx context.Context, r slog.Record) error {
+func (h *dbLogHandler) Handle(ctx context.Context, r slog.Record) error {
 	if !h.Enabled(ctx, r.Level) {
 		return nil
 	}
@@ -81,11 +88,11 @@ func (h *DBLogHandler) Handle(ctx context.Context, r slog.Record) error {
 }
 
 // WithAttrs adds attributes to the handler (not implemented for DBLogHandler).
-func (h *DBLogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+func (h *dbLogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return h // Return the same handler as this is a simple implementation.
 }
 
 // WithGroup adds a group to the handler (not implemented for DBLogHandler).
-func (h *DBLogHandler) WithGroup(name string) slog.Handler {
+func (h *dbLogHandler) WithGroup(name string) slog.Handler {
 	return h // Return the same handler as this is a simple implementation.
 }

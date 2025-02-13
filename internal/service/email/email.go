@@ -8,23 +8,23 @@ import (
 	"net/smtp"
 	"os"
 
-	Client "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/service/email/clients"
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/util"
+	Client "github.com/brightside-dev/ronin-fitness-be/internal/service/email/clients"
+	"github.com/brightside-dev/ronin-fitness-be/internal/util"
 
 	_ "github.com/joho/godotenv/autoload"
 )
 
-type EmailServiceInterface interface {
+type EmailService interface {
 	Send(templateName string, subject string, to []string, data map[string]string) error
 	// localSend(to []string, subject string, htmlBody string) error
 	// log(to []string, subject string)
 }
 
-type EmailService struct {
+type emailService struct {
 	Env       string
 	Logger    *slog.Logger
 	EmailAuth *EmailAuth
-	Mailgun   *Client.Mailgun
+	Mailgun   Client.Mailgun
 }
 
 type EmailAuth struct {
@@ -36,9 +36,9 @@ type EmailAuth struct {
 
 func NewEmailService(
 	logger *slog.Logger,
-) *EmailService {
+) EmailService {
 
-	return &EmailService{
+	return &emailService{
 		Env:    os.Getenv("APP_ENV"),
 		Logger: logger,
 		EmailAuth: &EmailAuth{
@@ -51,7 +51,7 @@ func NewEmailService(
 	}
 }
 
-func (s *EmailService) Send(
+func (s *emailService) Send(
 	templateName string,
 	subject string,
 	to []string,
@@ -87,7 +87,7 @@ func (s *EmailService) Send(
 	return nil
 }
 
-func (s *EmailService) localSend(to []string, subject string, htmlBody string) error {
+func (s *emailService) localSend(to []string, subject string, htmlBody string) error {
 	var auth smtp.Auth = nil
 	if s.Env != "local" {
 		auth = smtp.PlainAuth("", s.EmailAuth.FromEmail, "", s.EmailAuth.SMTPHost)
@@ -111,7 +111,7 @@ func (s *EmailService) localSend(to []string, subject string, htmlBody string) e
 	return nil
 }
 
-func (s *EmailService) log(to []string, subject string) {
+func (s *emailService) log(to []string, subject string) {
 	context := map[string]interface{}{
 		"email":   to[0],
 		"subject": subject,

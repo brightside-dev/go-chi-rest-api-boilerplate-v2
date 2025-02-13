@@ -1,4 +1,5 @@
 # 🥶 Golang + Chi Web Application Template
+## Note: I have now stopped updating this project. I'm currently building a side project using this structure. I may update this in the future based on my learnings on the other project.
 The goal of this project is threefold: to learn Golang, to make it the foundation for all my future side projects, and to level up as a programmer.
 
 I chose Golang for my future side projects because working with PHP, which I use daily at my job, has started to feel more like a chore than an enjoyable challenge. 
@@ -12,11 +13,7 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 2. Create a .env file and modify DB credentials
 3. Run DB migrations `goose up`
 4. Start server `go run ./cmd/api`
-5. Test web server: `curl localhost:8080/api/health` or `curl localhost:8080/api/ping`
 
-### 🏗️ TODO
-1. Implement tests
-2. Fix CI/CD Github Actions
 
 ### 🧰 Project Tools & Packages
 * MySQL driver: https://github.com/go-sql-driver/mysql
@@ -51,89 +48,6 @@ This project was initially bootstrapped using https://github.com/Melkeydev/go-bl
 
 **6. Database Logging**
     <br>* DB logger using log/slog
-
-### ⛩️ Folder Structure
-```
-/home/andrew/Go Projects/go-chi-rest-api-boilerplate-v2/
-├── cmd/                    # Entry point for CLI commands
-│   ├── command/            # CLI commands
-│   │   ├── cmd/
-│   │   │   ├── root.go
-│   │   │   ├── test_email.go
-│   │   │   └── test_mailgun.go
-│   │   └── main.go         # Main entry point
-│
-├── internal/               # Internal application logic
-│   ├── database/           # Database service
-│   │   └── database.go
-│   ├── email/              # Email service
-│   │   ├── email.go
-│   │   └── templates/
-│   │       └── test_email.html
-│   ├── handler/            # Handlers (controllers)
-│   │   ├── auth_admin_handler.go
-│   │   ├── auth_handler.go
-│   │   ├── middleware.go
-│   │   ├── user_handler.go
-│   │   ├── web_handler.go
-│   │   ├── dto/            # Data Transfer Objects
-│   │   │   └── dto.go
-│   │   ├── response/       # Response formatting
-│   │   │   └── response.go
-│
-│   ├── push/               # Push notification service
-│   │   ├── clients/        # Push clients
-│   │   │   ├── apn.go
-│   │   │   ├── fcm.go
-│   │   └── push.go         # Unified push service
-│
-│   ├── repository/         # Data access layer (repositories)
-│   │   ├── admin_user_repository.go
-│   │   ├── user_repository.go
-│   │   └── refresh_token_repository.go
-│
-│   ├── server/             # Server service
-│   │   ├── container.go    # Dependency injection container
-│   │   ├── routes.go       # Route definitions
-│   │   └── server.go       # Server initialization
-│
-│   ├── template/           # Template rendering service
-│   │   └── template.go
-│
-│   ├── model/              # Database models (entities)
-│   │   └── model.go
-│
-├── ui/                     # Frontend assets and views
-│   ├── assets/             # Static assets (CSS, JS, Images)
-│   │   ├── css/
-│   │   ├── img/
-│   │   ├── js/
-│   │   ├── vendor/
-│   │       ├── bootstrap/
-│   │       │   ├── css/bootstrap.min.css
-│   │       │   ├── js/bootstrap.min.js
-│   │       ├── chartjs/
-│   │       │   ├── chart.js
-│   │       │   ├── Chart.min.js
-│   │       ├── datatables/
-│   │           ├── DataTables-1.10.25/js/jquery.dataTables.js
-│   │           ├── datatables.js
-│
-│   ├── html/               # HTML views
-│   │   ├── dashboard/
-│   │   ├── partials/
-│   │   └── base.html
-│
-│   ├── templates/          # HTML templates
-│   │   └── dashboard.html
-│
-├── vendor/                 # Dependencies (managed by Go modules)
-│   └── dependencies
-│
-├── .env                    # Environment variables
-├── readme.md               # Documentation
-└── starter.md              # Starter guide
-```
 
 ### Useful Resources
 * https://go.dev/doc/effective_go

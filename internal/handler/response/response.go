@@ -5,23 +5,30 @@ import (
 	"net/http"
 )
 
-type APIResponse struct {
+type APIResponseDTO struct {
 	Success bool        `json:"success"`
 	Data    interface{} `json:"data,omitempty"`
 	Error   string      `json:"error,omitempty"`
 }
 
-func ErrorResponse(w http.ResponseWriter, r *http.Request, err error, statusCode int) {
-	// logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-	// 	AddSource: true,
-	// }))
+type APIResponseManager interface {
+	ErrorResponse(w http.ResponseWriter, r *http.Request, err error, statusCode int)
+	SuccessResponse(w http.ResponseWriter, r *http.Request, response interface{}, statusCode ...int)
+	ClientErrorResponse(w http.ResponseWriter, r *http.Request, err error)
+}
 
-	//logger.Error(err.Error(), "method", r.Method, "uri", r.URL.RequestURI())
+type apiResponseManager struct {
+}
 
+func NewAPIResponseManager() APIResponseManager {
+	return &apiResponseManager{}
+}
+
+func (rm *apiResponseManager) ErrorResponse(w http.ResponseWriter, r *http.Request, err error, statusCode int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
-	jsonResp, err := json.Marshal(APIResponse{
+	jsonResp, err := json.Marshal(APIResponseDTO{
 		Success: false,
 		Data:    nil,
 		Error:   err.Error(),
@@ -34,13 +41,7 @@ func ErrorResponse(w http.ResponseWriter, r *http.Request, err error, statusCode
 	w.Write(jsonResp)
 }
 
-func SuccessResponse(w http.ResponseWriter, r *http.Request, response interface{}, statusCode ...int) {
-	// logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-	// 	AddSource: true,
-	// }))
-
-	//logger.Info("success", "method", r.Method, "uri", r.URL.RequestURI())
-
+func (rm *apiResponseManager) SuccessResponse(w http.ResponseWriter, r *http.Request, response interface{}, statusCode ...int) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if len(statusCode) == 0 {
@@ -51,7 +52,7 @@ func SuccessResponse(w http.ResponseWriter, r *http.Request, response interface{
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode[0])
 
-	jsonResp, err := json.Marshal(APIResponse{
+	jsonResp, err := json.Marshal(APIResponseDTO{
 		Success: true,
 		Data:    response,
 		Error:   "",
@@ -64,6 +65,6 @@ func SuccessResponse(w http.ResponseWriter, r *http.Request, response interface{
 	w.Write(jsonResp)
 }
 
-func ClientErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	ErrorResponse(w, r, err, http.StatusBadRequest)
+func (rm *apiResponseManager) ClientErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
+	rm.ErrorResponse(w, r, err, http.StatusBadRequest)
 }

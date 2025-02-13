@@ -14,6 +14,7 @@ var (
 	// Request errors
 	ErrMissingParam     = fmt.Errorf("missing required parameter")
 	ErrInvalidParamType = fmt.Errorf("invalid parameter type")
+	ErrNothingToUpdate  = fmt.Errorf("nothing to update")
 )
 
 // Use this function for system errors that will be logged

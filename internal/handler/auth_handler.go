@@ -1,80 +1,96 @@
 package handler
 
 import (
-	"log/slog"
 	"net/http"
 
-	APIResponse "github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/handler/response"
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/service"
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/service/email"
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/util"
+	"github.com/brightside-dev/ronin-fitness-be/internal/handler/response"
+	"github.com/brightside-dev/ronin-fitness-be/internal/service"
+	"github.com/brightside-dev/ronin-fitness-be/internal/service/email"
 )
 
-type AuthHandler struct {
-	EmailService *email.EmailService
-	AuthService  service.AuthServiceInterface
+type AuthHandler interface {
+	Login() http.HandlerFunc
+	Register() http.HandlerFunc
+	Logout() http.HandlerFunc
+	RefreshToken() http.HandlerFunc
+	VerifyAccount() http.HandlerFunc
+}
+
+type authHandler struct {
+	APIResponse  response.APIResponseManager
+	EmailService email.EmailService
+	AuthService  service.AuthService
 }
 
 func NewAuthHandler(
-	emailService *email.EmailService,
-	authService service.AuthServiceInterface,
-) *AuthHandler {
-	return &AuthHandler{
+	apiResponse response.APIResponseManager,
+	emailService email.EmailService,
+	authService service.AuthService,
+) AuthHandler {
+	return &authHandler{
+		APIResponse:  apiResponse,
 		EmailService: emailService,
 		AuthService:  authService,
 	}
 }
 
-func (h *AuthHandler) Login() http.HandlerFunc {
+func (h *authHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userLoginResponseDTO, err := h.AuthService.Login(w, r)
 		if err != nil {
-			util.LogWithContext(h.EmailService.Logger, slog.LevelError, err.Error(), nil, r)
-			APIResponse.ErrorResponse(w, r, err, http.StatusUnauthorized)
+			h.APIResponse.ErrorResponse(w, r, err, http.StatusUnauthorized)
 			return
 		}
 
-		APIResponse.SuccessResponse(w, r, APIResponse.APIResponse{
+		h.APIResponse.SuccessResponse(w, r, response.APIResponseDTO{
 			Success: true,
 			Data:    &userLoginResponseDTO,
 		}, http.StatusOK)
 	}
 }
 
-func (h *AuthHandler) Register() http.HandlerFunc {
+func (h *authHandler) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userResponseDTO, err := h.AuthService.Register(w, r)
 		if err != nil {
-			util.LogWithContext(h.EmailService.Logger, slog.LevelError, err.Error(), nil, r)
-			APIResponse.ErrorResponse(w, r, err, http.StatusBadRequest)
+			h.APIResponse.ErrorResponse(w, r, err, http.StatusBadRequest)
 			return
 		}
 
-		APIResponse.SuccessResponse(w, r, &userResponseDTO, http.StatusCreated)
+		h.APIResponse.SuccessResponse(w, r, &userResponseDTO, http.StatusCreated)
 	}
 }
 
-func (h *AuthHandler) Logout() http.HandlerFunc {
+func (h *authHandler) Logout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := h.AuthService.Logout(w, r)
 		if err != nil {
-			util.LogWithContext(h.EmailService.Logger, slog.LevelError, err.Error(), nil, r)
-			APIResponse.ErrorResponse(w, r, err, http.StatusInternalServerError)
+			h.APIResponse.ErrorResponse(w, r, err, http.StatusInternalServerError)
 			return
 		}
-		APIResponse.SuccessResponse(w, r, nil)
+		h.APIResponse.SuccessResponse(w, r, nil)
 	}
 }
 
-func (h *AuthHandler) RefreshToken() http.HandlerFunc {
+func (h *authHandler) RefreshToken() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userRefreshTokenRepsonseDTO, err := h.AuthService.RefreshToken(w, r)
 		if err != nil {
-			util.LogWithContext(h.EmailService.Logger, slog.LevelError, err.Error(), nil, r)
-			APIResponse.ErrorResponse(w, r, err, http.StatusUnauthorized)
+			h.APIResponse.ErrorResponse(w, r, err, http.StatusUnauthorized)
 			return
 		}
 
-		APIResponse.SuccessResponse(w, r, userRefreshTokenRepsonseDTO, http.StatusOK)
+		h.APIResponse.SuccessResponse(w, r, userRefreshTokenRepsonseDTO, http.StatusOK)
+	}
+}
+
+func (h *authHandler) VerifyAccount() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		profileWithUserDTO, err := h.AuthService.VerifyAccount(w, r)
+		if err != nil {
+			h.APIResponse.ErrorResponse(w, r, err, http.StatusInternalServerError)
+			return
+		}
+		h.APIResponse.SuccessResponse(w, r, profileWithUserDTO, http.StatusOK)
 	}
 }

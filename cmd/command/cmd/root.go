@@ -6,7 +6,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/brightside-dev/go-chi-rest-api-boilerplate-v2/internal/server"
+	"github.com/brightside-dev/ronin-fitness-be/http"
 	"github.com/spf13/cobra"
 )
 
@@ -25,10 +25,10 @@ to quickly create a Cobra application.`,
 	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
-var container *server.Container
+var container *http.Container
 
 // SetContainer sets the container for the commands
-func SetContainer(cont *server.Container) {
+func SetContainer(cont *http.Container) {
 	container = cont
 }
 
